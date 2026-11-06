@@ -1,7 +1,6 @@
 import React from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import AdminLayout from '../layouts/AdminLayout';
-import Dashboard from '../pages/Dashboard';
 import ProyectosList from '../pages/proyectos/ProyectosList';
 import ProyectoCreate from '../pages/proyectos/ProyectoCreate';
 import ProyectoEdit from '../pages/proyectos/ProyectoEdit';
@@ -44,7 +43,7 @@ export default function AdminRoutes() {
         <AdminAccess>
           <AdminLayout>
             <Switch>
-              <Route exact path="/admin" component={Dashboard} />
+              <Route exact path="/admin" component={Estadisticas} />
               <Route exact path="/admin/proyectos" render={() => <AdminOnly><ProyectosList /></AdminOnly>} />
               <Route exact path="/admin/proyectos/nuevo" render={() => <AdminOnly><ProyectoCreate /></AdminOnly>} />
               <Route exact path="/admin/proyectos/:id/editar" render={() => <AdminOnly><ProyectoEdit /></AdminOnly>} />
@@ -63,7 +62,7 @@ export default function AdminRoutes() {
               <Route exact path="/admin/consultas" component={ConsultasList} />
               <Route exact path="/admin/consultas/:id/responder" component={ResponderConsulta} />
               <Route exact path="/admin/consultas/:id" component={ConsultaDetail} />
-              <Route exact path="/admin/estadisticas" render={() => <AdminOnly><Estadisticas /></AdminOnly>} />
+              <Redirect exact from="/admin/estadisticas" to="/admin" />
               <Route exact path="/admin/configuracion" render={() => <AdminOnly><Configuracion /></AdminOnly>} />
               <Redirect to="/admin" />
             </Switch>

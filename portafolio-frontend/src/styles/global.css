@@ -1,3 +1,210 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
-:root{--ink:#201d31;--muted:#827f93;--purple:#8067d8;--purple-dark:#6550b8;--lavender:#eeeaff;--navy:#171629;--line:#eeedf4;--surface:#fff;--canvas:#f7f6fb;--success:#23845e;--danger:#c65368;--warning:#a97827;--shadow:0 12px 34px rgba(34,27,68,.055)}
-*{box-sizing:border-box}html,body,#root{min-height:100%;margin:0}body{font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--canvas);font-size:14px}button,input,textarea,select{font:inherit}button,a{-webkit-tap-highlight-color:transparent}a{color:inherit;text-decoration:none}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.65}h1,h2,h3,h4,strong{font-family:'Manrope','DM Sans',sans-serif}h1,h2,h3,p{margin-top:0}::selection{background:#ded6ff;color:#34265f}.muted-text{color:var(--muted)}.visually-hidden{visibility:hidden}.required-mark{color:#c65368}.success-text{color:var(--success);font-size:12px}.notice-inline{background:#f5f2ff;border-radius:10px;padding:12px;color:#6655a2;font-size:12px;line-height:1.6}.eyebrow{font-size:10px;letter-spacing:1.35px;font-weight:800;color:#9485c9;margin-bottom:8px}
+/* ==========================================================================
+   Sistema visual compartido v1.0 — variante clara para administración
+   Todos los colores, degradados, sombras, radios y tiempos salen de estas variables.
+   ========================================================================== */
+:root {
+  /* Marca (según guía) */
+  --brand-bg: #0b1220;
+  --brand-surface: #17243a;
+  --brand-text: #f8fafc;
+  --brand-text-muted: #cbd5e1;
+
+  /* Variante clara */
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-icon: #64748b;
+
+  /* Acción y acento */
+  --color-primary: #4338ca;
+  --color-primary-hover: #3730a3;
+  --color-primary-soft: #eef2ff;
+  --color-primary-ring: rgba(67, 56, 202, 0.3);
+  --color-accent: #22d3ee;
+  --color-accent-soft: #ecfeff;
+  --color-accent-text: #0e7490;
+  --color-primary-border: #e0e7ff;
+
+  /* Superficies tintadas: alternan con el blanco para que no todas las tarjetas sean #FFFFFF */
+  --tint-indigo: #eef2ff;
+  --tint-cyan: #ecfeff;
+  --tint-slate: #eef2f7;
+  --tint-indigo-border: rgba(67, 56, 202, 0.14);
+  --tint-cyan-border: rgba(14, 116, 144, 0.18);
+  --tint-slate-border: rgba(71, 85, 105, 0.14);
+
+  /* Degradados de marca (texto blanco sobre ellos cumple AA) */
+  --gradient-brand: linear-gradient(135deg, #4338ca 0%, #3730a3 58%, #0e7490 130%);
+  --gradient-brand-soft: linear-gradient(120deg, #eef2ff 0%, #f5f7ff 55%, #ecfeff 100%);
+  --gradient-page: linear-gradient(170deg, #eef2ff 0%, #f8fafc 48%, #ecfeff 100%);
+  --gradient-cover-fallback: linear-gradient(135deg, #3730a3 0%, #4338ca 46%, #0e7490 100%);
+  --pattern-dots: radial-gradient(rgba(67, 56, 202, 0.14) 1px, transparent 1px);
+
+  /* Estados: solo para feedback */
+  --color-success: #10b981;
+  --color-success-text: #047857;
+  --color-success-soft: #ecfdf5;
+  --color-success-border: #a7f3d0;
+  --color-warning: #f59e0b;
+  --color-warning-text: #b45309;
+  --color-warning-soft: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-danger: #ef4444;
+  --color-danger-strong: #dc2626;
+  --color-danger-text: #b91c1c;
+  --color-danger-soft: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-danger-ring: rgba(239, 68, 68, 0.25);
+  --color-overlay: rgba(11, 18, 32, 0.6);
+
+  /* Tipografía */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fs-h1: 2rem;        /* 32px — escala del panel (la guía usa 44px en el sitio público) */
+  --fs-h2: 1.375rem;    /* 22px */
+  --fs-h3: 1.0625rem;   /* 17px */
+  --fs-body: 1rem;      /* 16px */
+  --fs-small: 0.875rem; /* 14px */
+  --fs-tiny: 0.8125rem; /* 13px, solo badges y etiquetas */
+
+  /* Forma */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* Sombras con tinte índigo */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 1px 3px rgba(15, 23, 42, 0.05), 0 10px 28px rgba(67, 56, 202, 0.08);
+  --shadow-lift: 0 2px 6px rgba(67, 56, 202, 0.08), 0 20px 44px rgba(67, 56, 202, 0.16);
+  --shadow-lg: 0 24px 64px rgba(11, 18, 32, 0.28);
+
+  /* Espaciado */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Movimiento: entre 150 y 250 ms; se desactiva con prefers-reduced-motion */
+  --transition: 180ms ease;
+  --duration-fast: 160ms;
+  --duration-base: 220ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* Layout */
+  --sidebar-width: 264px;
+  --topbar-height: 72px;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+html, body, #root { min-height: 100%; margin: 0; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.6; }
+a { color: inherit; text-decoration: none; }
+button, a { -webkit-tap-highlight-color: transparent; }
+img { max-width: 100%; }
+
+h1, h2, h3, h4 { margin: 0; font-family: var(--font-sans); color: var(--color-text); }
+h1 { font-size: var(--fs-h1); line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: var(--fs-h2); line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: var(--fs-h3); line-height: 1.3; font-weight: 600; }
+p { margin-top: 0; }
+strong { font-weight: 600; }
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection { background: var(--color-primary-soft); color: var(--color-primary-hover); }
+
+.muted-text { color: var(--color-text-muted); }
+.visually-hidden { visibility: hidden; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.required-mark { color: var(--color-danger-text); }
+.success-text { color: var(--color-success-text); font-size: var(--fs-small); font-weight: 500; }
+.mono { font-family: var(--font-mono); }
+
+.notice-inline {
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-primary-hover);
+  font-size: var(--fs-small);
+  line-height: 1.6;
+}
+
+.eyebrow {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--color-accent-text);
+  margin: 0 0 var(--space-2);
+}
+
+@media (max-width: 760px) {
+  :root { --fs-h1: 1.75rem; --fs-h2: 1.25rem; --topbar-height: 64px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   Color: acento de servicios en superficie oscura de marca y cian (sin violeta ni ámbar)
+   ========================================================================== */
+:root {
+  --gradient-brand-rich: linear-gradient(135deg, #312e81 0%, #4338ca 45%, #0e7490 120%);
+  --gradient-cyan: linear-gradient(135deg, #155e75 0%, #0e7490 60%, #0891b2 130%);
+  --gradient-violet: linear-gradient(135deg, #0b1220 0%, #17243a 58%, #0e7490 130%);
+
+  --color-violet: #17243a;
+  --color-violet-text: #0e7490;
+  --color-violet-soft: #eef2f7;
+  --tint-violet: #eef2f7;
+  --tint-violet-border: rgba(71, 85, 105, 0.22);
+
+  /* Ámbar: solo decorativo (sección Publicación); no comunica estado */
+  --color-amber-soft: #fef3c7;
+  --color-amber-text: #92400e;
+  --color-amber-border: #fcd34d;
+}

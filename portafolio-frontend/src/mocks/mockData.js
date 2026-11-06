@@ -10,8 +10,12 @@ const seed = {
     { id: 'd-202', titulo: 'Clima en tiempo real', descripcion: 'Consulta las condiciones meteorológicas mediante Open-Meteo.', tecnologias: ['Open-Meteo', 'JavaScript'], url: 'https://open-meteo.com/', imagen: '', estado: 'Publicado' }
   ],
   servicios: [
-    { id: 's-301', titulo: 'Desarrollo web', descripcion: 'Sitios web modernos, accesibles y adaptables.', icono: 'Code2', caracteristicas: ['Diseño responsive', 'Buenas prácticas', 'Optimización'], estado: 'Publicado' },
-    { id: 's-302', titulo: 'Integración de APIs', descripcion: 'Conexión de aplicaciones con servicios externos.', icono: 'Plug', caracteristicas: ['Consumo REST', 'Validación de datos'], estado: 'Publicado' }
+    { id: 's-301', titulo: 'Desarrollo web', descripcion: 'Sitios y aplicaciones web modernas, accesibles y adaptables a cualquier dispositivo.', icono: 'Code2', caracteristicas: ['Diseño responsive', 'Buenas prácticas', 'Optimización de rendimiento', 'SEO técnico', 'Accesibilidad WCAG 2.1', 'Despliegue continuo'], estado: 'Publicado' },
+    { id: 's-302', titulo: 'Integración de APIs', descripcion: 'Conexión de tu aplicación con servicios externos de forma segura y documentada.', icono: 'Plug', caracteristicas: ['Consumo REST', 'Validación de datos', 'Autenticación JWT', 'Documentación Swagger', 'Manejo de errores', 'Webhooks'], estado: 'Publicado' },
+    { id: 's-303', titulo: 'Diseño de interfaces', descripcion: 'Prototipos y sistemas de diseño que hacen tu producto claro y fácil de usar.', icono: 'Palette', caracteristicas: ['Prototipos interactivos', 'Sistema de diseño', 'Diseño responsive', 'Pruebas de usabilidad', 'Guía de estilos'], estado: 'Publicado' },
+    { id: 's-304', titulo: 'Bases de datos', descripcion: 'Modelado y mantenimiento de datos para aplicaciones que crecen sin perder velocidad.', icono: 'Database', caracteristicas: ['Modelado relacional', 'Consultas optimizadas', 'Migraciones versionadas', 'Respaldos automáticos', 'Índices y rendimiento'], estado: 'Publicado' },
+    { id: 's-305', titulo: 'Automatización de procesos', descripcion: 'Scripts y flujos que eliminan tareas repetitivas y avisan cuando algo importante pasa.', icono: 'Workflow', caracteristicas: ['Scripts en Node.js', 'Tareas programadas', 'Integración con Google Sheets', 'Notificaciones por correo'], estado: 'Borrador' },
+    { id: 's-306', titulo: 'Soporte y mantenimiento', descripcion: 'Acompañamiento continuo para que tu aplicación siga segura, actualizada y estable.', icono: 'LifeBuoy', caracteristicas: ['Actualizaciones de seguridad', 'Monitoreo de errores', 'Respuesta en 24 h', 'Reporte mensual', 'Copias de seguridad'], estado: 'Publicado' }
   ],
   usuarios: [
     { id: 'u-401', nombre: 'Camila Guerrero', email: 'admin@portfolio.demo', rol: 'administrador', estado: 'Activo', fechaRegistro: '2026-09-01' },
@@ -25,7 +29,7 @@ const seed = {
   ]
 };
 
-const KEY = 'portfolio-admin-mock-v1';
+const KEY = 'portfolio-admin-mock-v2';
 function readStore() {
   try { const saved = localStorage.getItem(KEY); return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(seed)); }
   catch (_) { return JSON.parse(JSON.stringify(seed)); }

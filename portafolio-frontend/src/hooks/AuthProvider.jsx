@@ -6,9 +6,7 @@ export const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  // const mocksEnabled = process.env.REACT_APP_USE_MOCKS === 'true';
-
-  const mocksEnabled = true; // Forzamos el simulador a "true" hasta que el backend real esté listo
+  const mocksEnabled = process.env.REACT_APP_USE_MOCKS === 'true';
 
   const refreshUser = useCallback(async () => {
     if (mocksEnabled) {
