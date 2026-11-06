@@ -12,7 +12,6 @@ export default function PageHeader({ eyebrow, title, description, action, backTo
         <div className="page-band-text">
           {eyebrow && <p className="eyebrow">{eyebrow}</p>}
           <h1>{title}</h1>
-          {description && <p>{description}</p>}
         </div>
       </div>
       <div className="page-heading-actions">

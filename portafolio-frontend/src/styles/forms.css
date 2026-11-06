@@ -448,3 +448,10 @@
 .settings-remove-photo { display: flex; justify-content: center; width: 100%; margin-top: 7px; font-size: .8rem; }
 .settings-diagnostic-card { align-self: start; }
 @media (max-width: 850px) { .settings-profile-diagnostic-layout { grid-template-columns: minmax(0, 1fr); } }
+
+
+/* Encabezados y acentos sin degradados cian/verdosos. */
+.settings-banner { background: #4338ca !important; }
+.settings-role { background: #3730a3 !important; }
+.settings-heading-icon-cyan, .settings-system-symbol-cyan, .form-section-icon.accent-cyan { background: #4338ca !important; }
+.form-section.tint-cyan { background: #eef2ff !important; }

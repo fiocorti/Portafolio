@@ -430,3 +430,8 @@
 .entity-card-icon.tone-indigo { background: linear-gradient(170deg, #ffffff 0%, var(--tint-indigo) 170%); border-color: var(--tint-indigo-border); }
 .entity-card-icon.tone-cyan { background: linear-gradient(170deg, #ffffff 0%, var(--tint-cyan) 170%); border-color: var(--tint-cyan-border); }
 .entity-card-icon.tone-slate { background: linear-gradient(170deg, #ffffff 0%, var(--color-violet-soft) 170%); border-color: var(--tint-violet-border); }
+
+
+/* Tarjetas e iconos cian: color uniforme, sin difuminado verdoso. */
+.entity-card-icon.tone-cyan, .entity-card-glyph.tone-cyan, .form-section-icon.accent-cyan { background: #eef2ff !important; }
+.cover.tone-cyan { background: #4338ca !important; }

@@ -10,7 +10,7 @@
   --brand-text-muted: #cbd5e1;
 
   /* Variante clara */
-  --color-bg: #f8fafc;
+  --color-bg: #f1f2fa;
   --color-surface: #ffffff;
   --color-surface-alt: #f1f5f9;
   --color-border: #e2e8f0;
@@ -38,10 +38,10 @@
   --tint-slate-border: rgba(71, 85, 105, 0.14);
 
   /* Degradados de marca (texto blanco sobre ellos cumple AA) */
-  --gradient-brand: linear-gradient(135deg, #4338ca 0%, #3730a3 58%, #0e7490 130%);
-  --gradient-brand-soft: linear-gradient(120deg, #eef2ff 0%, #f5f7ff 55%, #ecfeff 100%);
-  --gradient-page: linear-gradient(170deg, #eef2ff 0%, #f8fafc 48%, #ecfeff 100%);
-  --gradient-cover-fallback: linear-gradient(135deg, #3730a3 0%, #4338ca 46%, #0e7490 100%);
+  --gradient-brand: #4338ca;
+  --gradient-brand-soft: #eef2ff;
+  --gradient-page: #f1f2fa;
+  --gradient-cover-fallback: #4338ca;
   --pattern-dots: radial-gradient(rgba(67, 56, 202, 0.14) 1px, transparent 1px);
 
   /* Estados: solo para feedback */
@@ -193,9 +193,9 @@ strong { font-weight: 600; }
    Color: acento de servicios en superficie oscura de marca y cian (sin violeta ni ámbar)
    ========================================================================== */
 :root {
-  --gradient-brand-rich: linear-gradient(135deg, #312e81 0%, #4338ca 45%, #0e7490 120%);
-  --gradient-cyan: linear-gradient(135deg, #155e75 0%, #0e7490 60%, #0891b2 130%);
-  --gradient-violet: linear-gradient(135deg, #0b1220 0%, #17243a 58%, #0e7490 130%);
+  --gradient-brand-rich: #4338ca;
+  --gradient-cyan: #4338ca;
+  --gradient-violet: #3730a3;
 
   --color-violet: #17243a;
   --color-violet-text: #0e7490;

@@ -54,10 +54,7 @@
   padding: var(--space-6);
   border: 1px solid var(--tint-indigo-border);
   border-radius: var(--radius-lg);
-  background:
-    radial-gradient(circle at 100% 0%, rgba(34, 211, 238, 0.45), transparent 45%),
-    radial-gradient(rgba(67, 56, 202, 0.24) 1.5px, transparent 1.5px) 0 0 / 18px 18px,
-    linear-gradient(118deg, #e0e7ff 0%, #c7d2fe 45%, #a5f3fc 100%);
+  background: #e5e7f8;
   box-shadow: var(--shadow-md);
 }
 .page-band::after {
@@ -67,7 +64,7 @@
   top: 0;
   bottom: 0;
   width: 4px;
-  background: var(--gradient-brand);
+  background: #4338ca;
 }
 .page-band-text { min-width: 0; }
 .page-band h1 { color: var(--color-text); }
@@ -165,10 +162,19 @@
   display: grid;
   place-items: center;
   border-radius: 18px;
-  background: var(--gradient-brand-rich);
+  background: #4338ca;
   color: #ffffff;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.55), 0 12px 28px -10px rgba(49, 46, 129, 0.6);
 }
 @media (max-width: 760px) {
   .page-band-icon { width: 52px; height: 52px; border-radius: 14px; }
 }
+
+/* Fondo y encabezados planos: sin degradados, patrones ni manchas ambientales. */
+.ambient { display: none; }
+
+
+/* Ajustes solicitados: eliminar difuminados verdosos/cian y mantener tonos planos. */
+.blob-cyan, .blob-slate-cyan { display: none !important; }
+.panel.tint-cyan { background: #eef2ff; }
+.page-band p { display: none; }

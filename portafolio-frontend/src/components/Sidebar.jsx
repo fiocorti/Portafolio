@@ -39,7 +39,6 @@ export default function Sidebar({ open, onClose }) {
         <div className="sidebar-user-info"><strong>{name}</strong><small>{user?.rol || user?.role || 'Administrador'}</small></div>
         <button type="button" className="icon-button logout-button" title="Cerrar sesión" aria-label="Cerrar sesión" onClick={logout}><LogOut size={18} /></button>
       </div>
-      <div className="sidebar-footer-deco" aria-hidden="true">Sistema visual v1.0</div>
     </aside>
   );
 }

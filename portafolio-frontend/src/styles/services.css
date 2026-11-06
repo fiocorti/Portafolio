@@ -23,7 +23,7 @@
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: var(--gradient-violet);
+  background: #4338ca;
   color: #ffffff;
   box-shadow: 0 10px 22px -10px rgba(11, 18, 32, 0.5);
 }
@@ -88,7 +88,7 @@
   gap: var(--space-6);
   padding: var(--space-6);
   border-color: var(--tint-violet-border);
-  background: linear-gradient(120deg, #ffffff 0%, #eef2f7 60%, #eef2f7 100%);
+  background: #e5e7f8;
   box-shadow: inset 6px 0 0 #17243a, var(--shadow-md);
 }
 .svc-hero-icon {
@@ -98,7 +98,7 @@
   display: grid;
   place-items: center;
   border-radius: 28px;
-  background: var(--gradient-violet);
+  background: #4338ca;
   color: #ffffff;
   box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.7), 0 18px 36px -14px rgba(11, 18, 32, 0.5);
 }

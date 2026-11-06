@@ -315,3 +315,19 @@
   .cal-title { min-width: 0; font-size: 0.9375rem; }
   .cal-day { min-height: 34px; padding: 0.2rem; font-size: 0.8125rem; }
 }
+
+
+/* Reemplazo de acentos cian degradados por superficies violetas lisas. */
+.stat-accent { background: #eef2ff !important; }
+.section-title::before { background: #4338ca !important; }
+
+
+/* Indicadores: reemplaza el acento cian por lavanda uniforme y discreto. */
+.stat-accent {
+  background: #eef0ff;
+  border-color: #d8dcfb;
+}
+.stat-accent .stat-icon { color: #5146c8; }
+.stat-accent::before, .stat-accent::after {
+  background: #7770dc;
+}
