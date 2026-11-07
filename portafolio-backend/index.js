@@ -16,6 +16,13 @@ app.get('/api/test', (req, res) => {
 
 // Levantar el servidor
 const PORT = process.env.PORT || 3000;
+
+// Importar rutas
+const proyectosRoutes = require('./src/routes/proyectos.routes');
+
+// Usar rutas
+app.use('/api/proyectos', proyectosRoutes);
+
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
