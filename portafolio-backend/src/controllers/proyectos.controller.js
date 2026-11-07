@@ -8,7 +8,7 @@ const obtenerProyectos = async (req, res) => {
                    GROUP_CONCAT(t.nombre) as tecnologias
             FROM proyectos p
             LEFT JOIN proyecto_tecnologia pt ON p.id_proyecto = pt.id_proyecto
-            LEFT JOIN tecnologías t ON pt.id_tecnologia = t.id_tecnologia
+            LEFT JOIN tecnologias t ON pt.id_tecnologia = t.id_tecnologia
             GROUP BY p.id_proyecto
         `;
         
