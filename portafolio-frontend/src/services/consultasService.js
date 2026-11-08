@@ -17,7 +17,7 @@ export default {
     return request('/api/contacto/responder', {
       method: 'POST',
       body: {
-        id_consulta: Number(id),
+        id_consulta: id,
         contenido_respuesta: respuesta
       }
     });
