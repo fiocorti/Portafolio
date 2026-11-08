@@ -24,13 +24,46 @@ import Configuracion from '../pages/Configuracion';
 import useAuth from '../hooks/useAuth';
 import LoadingState from '../components/LoadingState';
 
-function AdminAccess({ children, allowed = ['administrador', 'admin', 'operador'] }) {
+
+function AdminAccess({
+  children,
+  allowed = ["administrador", "admin", "operador"],
+}) {
   const { user, loading } = useAuth();
-  if (loading) return <LoadingState label="Verificando sesión..." />;
-  if (!user) return <Redirect to={process.env.REACT_APP_LOGIN_URL || '/login'} />;
-  if (!allowed.includes(String(user.rol || user.role || '').toLowerCase())) return <Redirect to="/admin/consultas" />;
+
+  if (loading) {
+    return (
+      <LoadingState label="Verificando sesión..." />
+    );
+  }
+
+  // Usuario no autenticado
+  if (!user) {
+    return <Redirect to="/login" />;
+  }
+
+  // Obtener el rol del usuario
+  const rol = String(
+    user.rol || user.role || ""
+  ).toLowerCase().trim();
+
+  // Verificar si tiene permiso
+  if (!allowed.includes(rol)) {
+
+    // Un operador no puede acceder a
+    // funcionalidades exclusivas del admin
+    if (rol === "operador") {
+      return <Redirect to="/admin/consultas" />;
+    }
+
+    // Usuarios sin permisos administrativos
+    // vuelven al sitio público
+    return <Redirect to="/" />;
+  }
+
   return children;
 }
+
 
 function AdminOnly({ children }) {
   return <AdminAccess allowed={['administrador', 'admin']}>{children}</AdminAccess>;
