@@ -16,17 +16,6 @@ URL Base de desarrollo: `http://localhost:3001/api`
     "contrasena": "mi_clave_secreta"
   }
   ```
-- **Respuesta Exitosa (200 OK):**
-  ```json
-  {
-    "exito": true,
-    "token": "eyJhbGciOiJIUzI1NiIsInR5...",
-    "usuario": {
-      "id_usuario": 1,
-      "nombre": "Lucas"
-    }
-  }
-  ```
 
 ---
 
@@ -35,38 +24,21 @@ URL Base de desarrollo: `http://localhost:3001/api`
 ### Obtener todos los Proyectos
 - **Ruta:** `/proyectos`
 - **Método:** `GET`
-- **Respuesta Exitosa (200 OK):** Devuelve un arreglo con los proyectos y sus tecnologías asociadas concatenadas.
+- **Respuesta Exitosa (200 OK):** Devuelve un arreglo con los proyectos y sus tecnologías asociadas.
 
-### Crear un nuevo Proyecto
+### Crear un nuevo Proyecto (Con Imagen)
 - **Ruta:** `/proyectos`
 - **Método:** `POST`
-- **Body requerido (JSON):**
-  ```json
-  {
-    "nombre": "API E-commerce",
-    "descripcion": "Backend para tienda",
-    "repositorio_url": "https://github.com/...",
-    "estado": "Publicado",
-    "tecnologias": [
-      { "nombre": "Node.js", "categoria": "Backend" },
-      { "nombre": "MySQL", "categoria": "Base de Datos" }
-    ]
-  }
-  ```
-- **Respuesta Exitosa (200 OK):** `{"exito": true, "mensaje": "Proyecto creado exitosamente"}`
-
-### Actualizar un Proyecto
-- **Ruta:** `/proyectos/:id`
-- **Método:** `PUT`
-- **Descripción:** Actualiza los datos del proyecto y reemplaza sus tecnologías asociadas en la tabla intermedia.
-- **Body requerido (JSON):** Igual al del POST.
-- **Respuestas:** `200 OK` (Éxito), `404 Not Found` (Proyecto no encontrado).
-
-### Eliminar un Proyecto
-- **Ruta:** `/proyectos/:id`
-- **Método:** `DELETE`
-- **Descripción:** Elimina el proyecto y limpia su relación con las tecnologías (borrado en cascada). Las tecnologías NO se borran del sistema.
-- **Respuestas:** `200 OK` (Éxito), `404 Not Found`.
+- **Tipo de Envío:** `FormData` (Multipart) - *¡Ya no es JSON!*
+- **Campos del FormData requeridos:**
+  - `nombre` (Texto)
+  - `descripcion` (Texto)
+  - `repositorio_url` (Texto)
+  - `demo_url` (Texto)
+  - `estado` (Texto)
+  - `tecnologias` (Texto/JSON Stringificado): Ej. `[{"nombre":"React","categoria":"Frontend"}]`
+  - `imagen` (Archivo - File): Solo formatos jpg, png, webp, avif.
+- **Respuesta Exitosa (201 Created):** `{"exito": true, "mensaje": "...", "id_nuevo": 1, "imagen_url": "https://res.cloudinary..."}`
 
 ---
 
@@ -75,7 +47,6 @@ URL Base de desarrollo: `http://localhost:3001/api`
 ### Obtener todos los Servicios
 - **Ruta:** `/servicios`
 - **Método:** `GET`
-- **Respuesta Exitosa (200 OK):** Devuelve un arreglo con la lista completa de servicios.
 
 ### Crear un nuevo Servicio
 - **Ruta:** `/servicios`
@@ -86,24 +57,10 @@ URL Base de desarrollo: `http://localhost:3001/api`
     "nombre": "Desarrollo Web",
     "descripcion": "Creación de sitios a medida",
     "caracteristicas": "Diseño responsivo\nSEO Optimizado",
-    "icono_url": "Code2",
+    "icono_url": "FaCode",
     "estado": "Publicado"
   }
   ```
-- **Respuesta Exitosa (200 OK):** `{"exito": true, "mensaje": "Servicio creado..."}`
-
-### Actualizar un Servicio
-- **Ruta:** `/servicios/:id`
-- **Método:** `PUT`
-- **Descripción:** Actualiza todos los datos de un servicio existente.
-- **Body requerido (JSON):** Igual al del POST.
-- **Respuestas:** `200 OK` (Éxito), `404 Not Found`.
-
-### Eliminar un Servicio
-- **Ruta:** `/servicios/:id`
-- **Método:** `DELETE`
-- **Descripción:** Elimina un servicio de la base de datos.
-- **Respuestas:** `200 OK` (Éxito), `404 Not Found`.
 
 ---
 
@@ -112,14 +69,61 @@ URL Base de desarrollo: `http://localhost:3001/api`
 ### Obtener todas las Tecnologías
 - **Ruta:** `/tecnologias`
 - **Método:** `GET`
-- **Descripción:** Devuelve el catálogo de tecnologías ordenadas por categoría y nombre.
-- **Respuesta Exitosa (200 OK):** Arreglo de objetos con las tecnologías.
 
-### Eliminar una Tecnología
-- **Ruta:** `/tecnologias/:id`
-- **Método:** `DELETE`
-- **Descripción:** Elimina una tecnología. **Restricción:** Solo se permite si no está asociada a ningún proyecto (huérfana).
-- **Respuestas:**
-  - `200 OK`: Eliminada con éxito.
-  - `409 Conflict`: Bloqueado porque está en uso.
-  - `404 Not Found`: No encontrada.
+---
+
+## 5. Experiencias
+
+### Obtener todas las Experiencias
+- **Ruta:** `/experiencias`
+- **Método:** `GET`
+
+### Crear una nueva Experiencia
+- **Ruta:** `/experiencias`
+- **Método:** `POST`
+- **Body requerido (JSON):**
+  ```json
+  {
+    "id_admin": 1,
+    "titulo": "Desarrollador Backend",
+    "categoria": "Proyectos Académicos",
+    "descripcion": "Diseño de API REST...",
+    "fecha_inicio": "2026-08-01",
+    "fecha_fin": "2026-11-06",
+    "estado": "Publicado"
+  }
+  ```
+
+---
+
+## 6. Contacto (Consultas)
+
+### 6.1. Enviar Consulta (Desde el Portafolio)
+- **Ruta:** `/contacto`
+- **Método:** `POST`
+- **Descripción:** Registra la consulta del visitante en la base de datos (tablas `consultas` y `mensajes`). Protegido por limitador anti-spam (5 peticiones/hora).
+- **Body requerido (JSON):**
+  ```json
+  {
+    "id_admin": 1,
+    "id_servicio": 2,
+    "nombre_remitente": "Alonso Yatra",
+    "email_remitente": "alonso@ejemplo.com",
+    "motivo": "Cotización",
+    "contenido": "Hola, me gustaría saber el presupuesto para una página de e-commerce."
+  }
+  ```
+- **Respuesta:** `201 Created` (Consulta registrada correctamente).
+
+### 6.2. Responder Consulta (Desde el Panel de Admin)
+- **Ruta:** `/contacto/responder`
+- **Método:** `POST`
+- **Descripción:** Registra la respuesta del administrador en la base de datos y envía un correo electrónico automático al visitante vía Nodemailer.
+- **Body requerido (JSON):**
+  ```json
+  {
+    "id_consulta": 1,
+    "contenido_respuesta": "Hola Alonso, te adjunto el presupuesto detallado..."
+  }
+  ```
+- **Respuesta:** `200 OK` (Respuesta guardada y correo enviado al visitante).

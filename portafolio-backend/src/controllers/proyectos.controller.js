@@ -33,26 +33,33 @@ const obtenerProyectos = async (req, res) => {
 };
 
 const crearProyecto = async (req, res) => {
-    // Pedimos una conexión exclusiva al pool para manejar la transacción
     const conexion = await pool.getConnection();
 
     try {
-        const { nombre, descripcion, repositorio_url, imagen_url, demo_url, estado, tecnologias } = req.body;
+        const { nombre, descripcion, repositorio_url, demo_url, estado, tecnologias } = req.body;
         const id_admin = 1; 
         const estadoFinal = estado || 'Borrador';
+        
+        // 1. Atrapamos la URL de la imagen que subió Multer/Cloudinary (si es que enviaron una)
+        const imagen_url = req.file ? req.file.path : null;
 
-        // 1. Validar la regla de negocio: ¿Vinieron tecnologías?
-        if (!tecnologias || tecnologias.length === 0) {
+        // 2. Parseamos las tecnologías porque desde FormData llegan como un String de texto
+        let tecnologiasArray = [];
+        if (tecnologias) {
+            tecnologiasArray = typeof tecnologias === 'string' ? JSON.parse(tecnologias) : tecnologias;
+        }
+
+        // 3. Validar la regla de negocio
+        if (tecnologiasArray.length === 0) {
             return res.status(400).json({ 
                 exito: false, 
                 mensaje: 'Regla de negocio: Un proyecto debe incluir al menos una tecnología.' 
             });
         }
 
-        // 2. Iniciamos la transacción segura
         await conexion.beginTransaction();
 
-        // 3. Insertamos el proyecto en la tabla maestra
+        // 4. Insertamos el proyecto con su imagen_url de Cloudinary
         const queryProyecto = `
             INSERT INTO proyectos 
             (id_admin, nombre, descripcion, repositorio_url, imagen_url, demo_url, fecha_creacion, estado) 
@@ -61,46 +68,40 @@ const crearProyecto = async (req, res) => {
         const [resProyecto] = await conexion.query(queryProyecto, [id_admin, nombre, descripcion, repositorio_url, imagen_url, demo_url, estadoFinal]);
         const idProyectoNuevo = resProyecto.insertId;
 
-        // 4. Procesamos las tecnologías una por una
-        for (const tec of tecnologias) {
+        // 5. Procesamos las tecnologías una por una
+        for (const tec of tecnologiasArray) {
             let idTecnologia;
 
-            // Verificamos si la tecnología ya existe en la base (por nombre)
             const [existeTec] = await conexion.query('SELECT id_tecnologia FROM tecnologias WHERE nombre = ?', [tec.nombre]);
 
             if (existeTec.length > 0) {
-                // Si ya existe, rescatamos su ID
                 idTecnologia = existeTec[0].id_tecnologia;
             } else {
-                // Si es nueva, la creamos en la tabla maestra de tecnologías
                 const queryNuevaTec = 'INSERT INTO tecnologias (nombre, categoria) VALUES (?, ?)';
                 const [resTecnologia] = await conexion.query(queryNuevaTec, [tec.nombre, tec.categoria]);
                 idTecnologia = resTecnologia.insertId;
             }
 
-            // 5. Insertamos la relación en la tabla intermedia N:M
             await conexion.query(
                 'INSERT INTO proyecto_tecnologia (id_proyecto, id_tecnologia) VALUES (?, ?)', 
                 [idProyectoNuevo, idTecnologia]
             );
         }
 
-        // 6. Si todo salió perfecto, confirmamos los cambios en el disco
         await conexion.commit();
 
-        res.json({
+        res.status(201).json({
             exito: true,
-            mensaje: '¡Proyecto y tecnologías guardados con éxito!',
-            id_nuevo: idProyectoNuevo
+            mensaje: '¡Proyecto y tecnologías guardados con éxito en la BD y Cloudinary!',
+            id_nuevo: idProyectoNuevo,
+            imagen_url: imagen_url
         });
 
     } catch (error) {
-        // Si explotó cualquier cosa en el proceso, deshacemos todo
         await conexion.rollback();
         console.error('Error en la transacción:', error);
         res.status(500).json({ exito: false, mensaje: 'Error al guardar el proyecto completo' });
     } finally {
-        // Siempre hay que devolver la conexión al pool para no saturar el servidor
         conexion.release();
     }
 };
