@@ -105,4 +105,88 @@ const crearProyecto = async (req, res) => {
     }
 };
 
-module.exports = { obtenerProyectos, crearProyecto };
+const actualizarProyecto = async (req, res) => {
+    const conexion = await pool.getConnection();
+
+    try {
+        const { id } = req.params;
+        const { nombre, descripcion, repositorio_url, imagen_url, demo_url, estado, tecnologias } = req.body;
+
+        await conexion.beginTransaction();
+
+        // 1. Actualizamos los datos principales del proyecto
+        const queryUpdate = `
+            UPDATE proyectos 
+            SET nombre = ?, descripcion = ?, repositorio_url = ?, imagen_url = ?, demo_url = ?, estado = ?
+            WHERE id_proyecto = ?
+        `;
+        const [resultadoProyecto] = await conexion.query(queryUpdate, [nombre, descripcion, repositorio_url, imagen_url, demo_url, estado, id]);
+
+        if (resultadoProyecto.affectedRows === 0) {
+            await conexion.rollback();
+            return res.status(404).json({ exito: false, mensaje: 'Proyecto no encontrado' });
+        }
+
+        // 2. Si el frontend nos manda tecnologías, actualizamos las relaciones
+        if (tecnologias && tecnologias.length > 0) {
+            // Borramos los "cables" viejos de este proyecto
+            await conexion.query('DELETE FROM proyecto_tecnologia WHERE id_proyecto = ?', [id]);
+
+            // Conectamos los "cables" nuevos
+            for (const tec of tecnologias) {
+                let idTecnologia;
+                const [existeTec] = await conexion.query('SELECT id_tecnologia FROM tecnologias WHERE nombre = ?', [tec.nombre]);
+
+                if (existeTec.length > 0) {
+                    idTecnologia = existeTec[0].id_tecnologia;
+                } else {
+                    const [nuevaTec] = await conexion.query('INSERT INTO tecnologias (nombre, categoria) VALUES (?, ?)', [tec.nombre, tec.categoria]);
+                    idTecnologia = nuevaTec.insertId;
+                }
+
+                await conexion.query(
+                    'INSERT INTO proyecto_tecnologia (id_proyecto, id_tecnologia) VALUES (?, ?)', 
+                    [id, idTecnologia]
+                );
+            }
+        }
+
+        await conexion.commit();
+        res.json({ exito: true, mensaje: 'Proyecto y tecnologías actualizados correctamente' });
+
+    } catch (error) {
+        await conexion.rollback();
+        console.error('Error al actualizar proyecto:', error);
+        res.status(500).json({ exito: false, mensaje: 'Error interno al actualizar' });
+    } finally {
+        conexion.release();
+    }
+};
+
+const eliminarProyecto = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Al borrar el proyecto, MySQL borra automáticamente las filas asociadas 
+        // en proyecto_tecnologia (si configuraste la FK en cascada)
+        const query = 'DELETE FROM proyectos WHERE id_proyecto = ?';
+        const [resultado] = await pool.query(query, [id]);
+
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({ 
+                exito: false, 
+                mensaje: 'Proyecto no encontrado o ya eliminado' 
+            });
+        }
+
+        res.json({ 
+            exito: true, 
+            mensaje: 'Proyecto eliminado correctamente (las tecnologías siguen disponibles en el sistema)' 
+        });
+    } catch (error) {
+        console.error('Error al eliminar proyecto:', error);
+        res.status(500).json({ exito: false, mensaje: 'Error interno al eliminar el proyecto' });
+    }
+};
+
+module.exports = { obtenerProyectos, crearProyecto, actualizarProyecto, eliminarProyecto };

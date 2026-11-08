@@ -1,12 +1,18 @@
 const express = require('express');
 const router = express.Router();
 // Importamos las funciones
-const { obtenerProyectos, crearProyecto } = require('../controllers/proyectos.controller');
+const { 
+    obtenerProyectos, 
+    crearProyecto, 
+    eliminarProyecto, 
+    actualizarProyecto } = require('../controllers/proyectos.controller');
 
-// GET: Para pedir datos (ahora en http://localhost:3001/api/proyectos)
+// Rutas base
 router.get('/', obtenerProyectos);
-
-// POST: Para enviar datos nuevos 
 router.post('/', crearProyecto);
+
+// Rutas con ID específico
+router.delete('/:id', eliminarProyecto);
+router.put('/:id', actualizarProyecto);
 
 module.exports = router;

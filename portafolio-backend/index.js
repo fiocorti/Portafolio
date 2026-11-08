@@ -17,6 +17,7 @@ app.get('/api/test', (req, res) => {
 // 1. Importar TODAS las rutas (las agrupamos para mantener el orden)
 const proyectosRoutes = require('./src/routes/proyectos.routes');
 const serviciosRoutes = require('./src/routes/servicios.routes');
+const tecnologiasRoutes = require('./src/routes/tecnologias.routes');
 
 // Ruta de prueba inicial
 app.get('/api/test', (req, res) => {
@@ -26,6 +27,7 @@ app.get('/api/test', (req, res) => {
 // 2. Usar TODAS las rutas (registramos las ventanillas)
 app.use('/api/proyectos', proyectosRoutes);
 app.use('/api/servicios', serviciosRoutes);
+app.use('/api/tecnologias', tecnologiasRoutes);
 
 // 3. Levantar el servidor SIEMPRE como última instrucción
 const PORT = process.env.PORT || 3001;
