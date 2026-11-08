@@ -55,6 +55,19 @@ export async function mockRequest(path, options = {}) {
   if (cleanPath === '/api/admin/dashboard' && method === 'GET') return dashboard(store);
   if (cleanPath === '/api/admin/estadisticas' && method === 'GET') return dashboard(store);
 
+  // Simula la misma ruta y el mismo contrato que utiliza el backend real.
+  if (cleanPath === '/api/contacto/responder' && method === 'POST') {
+    const contact = store.contactos.find(item => String(item.id) === String(body.id_consulta));
+    if (!contact) throw { status: 404, message: 'Consulta no encontrada.' };
+    contact.respuesta = body.contenido_respuesta || '';
+    contact.estado = 'Respondida';
+    writeStore(store);
+    return {
+      item: contact,
+      mensaje: 'Respuesta registrada en los datos de demostración.'
+    };
+  }
+
   const routes = [
     ['proyectos', '/api/admin/proyectos'], ['demos', '/api/admin/demos'], ['servicios', '/api/admin/servicios'],
     ['usuarios', '/api/admin/usuarios'], ['contactos', '/api/contactos']
