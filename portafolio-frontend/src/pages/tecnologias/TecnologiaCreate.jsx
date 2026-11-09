@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Code2, Save } from 'lucide-react';
@@ -24,8 +23,7 @@ export default function TecnologiaCreate() {
 
   const [values, setValues] = useState({
     nombre: '',
-    categoria: 'Frontend',
-    icono_url: ''
+    categoria: 'Frontend'
   });
 
   const [saving, setSaving] = useState(false);
@@ -47,60 +45,39 @@ export default function TecnologiaCreate() {
     setError('');
   };
 
-  const validate = () => {
-    const next = {};
-
-    if (!values.nombre.trim()) {
-      next.nombre = 'El nombre de la tecnología es obligatorio.';
-    }
-
-    if (!values.categoria) {
-      next.categoria = 'Seleccioná una categoría.';
-    }
-
-    if (values.icono_url.trim()) {
-      try {
-        const url = new URL(values.icono_url);
-
-        if (!['http:', 'https:'].includes(url.protocol)) {
-          next.icono_url = 'La URL debe comenzar con http:// o https://.';
-        }
-      } catch {
-        next.icono_url = 'Ingresá una URL válida.';
-      }
-    }
-
-    setFieldErrors(next);
-
-    return Object.keys(next).length === 0;
-  };
-
   const submit = async event => {
     event.preventDefault();
 
-    if (!validate()) return;
+    const errors = {};
+
+    if (!values.nombre.trim()) {
+      errors.nombre = 'Ingresá el nombre de la tecnología.';
+    }
+
+    if (!values.categoria) {
+      errors.categoria = 'Seleccioná una categoría.';
+    }
+
+    if (Object.keys(errors).length) {
+      setFieldErrors(errors);
+      return;
+    }
 
     setSaving(true);
     setError('');
 
     try {
-      const payload = {
+      await tecnologiasService.create({
         nombre: values.nombre.trim(),
-        categoria: values.categoria,
-        icono_url: values.icono_url.trim() || null
-      };
-
-      const result = await tecnologiasService.create(payload);
+        categoria: values.categoria
+      });
 
       setToast({
         type: 'success',
-        message: result?.mensaje || 'Tecnología creada correctamente.'
+        message: 'Tecnología creada correctamente.'
       });
 
-      setTimeout(() => {
-        history.push(BASE_PATH);
-      }, 800);
-
+      setTimeout(() => history.push(BASE_PATH), 800);
     } catch (e) {
       setError(e.message);
       setSaving(false);
@@ -112,22 +89,12 @@ export default function TecnologiaCreate() {
       <PageHeader
         icon={Code2}
         title="Nueva tecnología"
-        description="Incorporá una tecnología al stack de tu portfolio."
+        description="Incorporá una tecnología al catálogo."
         backTo={BASE_PATH}
       />
 
-      <section className="panel" style={{ padding: 16, marginBottom: 18 }}>
-        <strong>Importante</strong>
-        <p className="muted-text" style={{ marginBottom: 0 }}>
-          El formulario está preparado, pero el servidor todavía
-          necesita implementar POST /api/tecnologias para guardar
-          nuevas tecnologías.
-        </p>
-      </section>
-
       <form className="form-panel" onSubmit={submit} noValidate>
         <div className="form-grid">
-
           <FormField
             label="Nombre de la tecnología"
             name="nombre"
@@ -148,20 +115,6 @@ export default function TecnologiaCreate() {
             required
             error={fieldErrors.categoria}
           />
-
-          <div className="form-span-2">
-            <FormField
-              label="URL del ícono"
-              name="icono_url"
-              type="url"
-              value={values.icono_url}
-              onChange={change}
-              placeholder="https://..."
-              help="Ingresá la dirección de una imagen del logo. Este campo es opcional."
-              error={fieldErrors.icono_url}
-            />
-          </div>
-
         </div>
 
         <ErrorMessage message={error} />
@@ -187,10 +140,7 @@ export default function TecnologiaCreate() {
         </div>
       </form>
 
-      <Toast
-        toast={toast}
-        onClose={() => setToast(null)}
-      />
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </>
   );
 }

@@ -3,19 +3,21 @@ import React from 'react';
 import EntityFormPage from '../../components/EntityFormPage';
 import serviciosService from '../../services/serviciosService';
 
-export default function ServicioCreate() {
-  const transformarServicio = values => ({
-    nombre: values.titulo,
-    descripcion: values.descripcion,
+function transformarServicio(values) {
+  return {
+    nombre: String(values.titulo || '').trim(),
+    descripcion: String(values.descripcion || '').trim(),
     icono_url: values.icono || null,
-    caracteristicas: values.caracteristicas
-      .split('\n')
+    caracteristicas: String(values.caracteristicas || '')
+      .split(/\r?\n/)
       .map(item => item.trim())
       .filter(Boolean)
       .join('\n'),
     estado: values.estado || 'Borrador'
-  });
+  };
+}
 
+export default function ServicioCreate() {
   return (
     <EntityFormPage
       title="Nuevo servicio"

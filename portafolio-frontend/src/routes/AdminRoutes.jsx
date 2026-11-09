@@ -4,35 +4,44 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import AdminLayout from '../layouts/AdminLayout';
 
+// PROYECTOS
 import ProyectosList from '../pages/proyectos/ProyectosList';
 import ProyectoCreate from '../pages/proyectos/ProyectoCreate';
 import ProyectoEdit from '../pages/proyectos/ProyectoEdit';
 import ProyectoDetail from '../pages/proyectos/ProyectoDetail';
 
+// DEMOS
 import DemosList from '../pages/demos/DemosList';
 import DemoCreate from '../pages/demos/DemoCreate';
 import DemoEdit from '../pages/demos/DemoEdit';
 import DemoDetail from '../pages/demos/DemoDetail';
 
+// SERVICIOS
 import ServiciosList from '../pages/servicios/ServiciosList';
 import ServicioCreate from '../pages/servicios/ServicioCreate';
 import ServicioEdit from '../pages/servicios/ServicioEdit';
 import ServicioDetail from '../pages/servicios/ServicioDetail';
 
+// USUARIOS
 import UsuariosList from '../pages/usuarios/UsuariosList';
 import UsuarioDetail from '../pages/usuarios/UsuarioDetail';
 import UsuarioEdit from '../pages/usuarios/UsuarioEdit';
 
+// CONSULTAS
 import ConsultasList from '../pages/consultas/ConsultasList';
 import ConsultaDetail from '../pages/consultas/ConsultaDetail';
 import ResponderConsulta from '../pages/consultas/ResponderConsulta';
 
+// TECNOLOGÍAS
 import TecnologiasList from '../pages/tecnologias/TecnologiasList';
 import TecnologiaCreate from '../pages/tecnologias/TecnologiaCreate';
+import TecnologiaEdit from '../pages/tecnologias/TecnologiaEdit';
 
+// EXPERIENCIAS
 import ExperienciasList from '../pages/experiencias/ExperienciasList';
 import ExperienciaCreate from '../pages/experiencias/ExperienciaCreate';
 
+// GENERAL
 import Estadisticas from '../pages/Estadisticas';
 import Configuracion from '../pages/Configuracion';
 
@@ -78,6 +87,7 @@ export default function AdminRoutes() {
           <AdminLayout>
             <Switch>
 
+              {/* INICIO / ESTADÍSTICAS */}
               <Route
                 exact
                 path="/admin"
@@ -137,27 +147,33 @@ export default function AdminRoutes() {
               {/* TECNOLOGÍAS */}
               <Route
                 exact
+                path="/admin/tecnologias"
+                render={() => <AdminOnly><TecnologiasList /></AdminOnly>}
+              />
+
+              <Route
+                exact
                 path="/admin/tecnologias/nuevo"
                 render={() => <AdminOnly><TecnologiaCreate /></AdminOnly>}
               />
 
               <Route
                 exact
-                path="/admin/tecnologias"
-                render={() => <AdminOnly><TecnologiasList /></AdminOnly>}
+                path="/admin/tecnologias/:id/editar"
+                render={() => <AdminOnly><TecnologiaEdit /></AdminOnly>}
               />
 
               {/* EXPERIENCIAS */}
               <Route
                 exact
-                path="/admin/experiencias/nuevo"
-                render={() => <AdminOnly><ExperienciaCreate /></AdminOnly>}
+                path="/admin/experiencias"
+                render={() => <AdminOnly><ExperienciasList /></AdminOnly>}
               />
 
               <Route
                 exact
-                path="/admin/experiencias"
-                render={() => <AdminOnly><ExperienciasList /></AdminOnly>}
+                path="/admin/experiencias/nuevo"
+                render={() => <AdminOnly><ExperienciaCreate /></AdminOnly>}
               />
 
               {/* SERVICIOS */}
@@ -236,6 +252,7 @@ export default function AdminRoutes() {
                 render={() => <AdminOnly><Configuracion /></AdminOnly>}
               />
 
+              {/* RUTA POR DEFECTO */}
               <Redirect to="/admin" />
 
             </Switch>

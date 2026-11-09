@@ -1,4 +1,3 @@
-
 import { createEntityService } from './entityFactory';
 
 const api = createEntityService('/api/tecnologias');
@@ -27,12 +26,18 @@ const tecnologiasService = {
     }
   },
 
+  async update(id, payload) {
+    try {
+      return await api.update(id, payload);
+    } catch (error) {
+      throw new Error(obtenerMensaje(error));
+    }
+  },
+
   async remove(id) {
     try {
       return await api.remove(id);
     } catch (error) {
-      // El backend responde HTTP 409 cuando la tecnología
-      // está asociada a uno o más proyectos.
       throw new Error(obtenerMensaje(error));
     }
   }
