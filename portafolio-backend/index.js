@@ -5,6 +5,14 @@ require('./src/config/db');
 
 const app = express();
 
+const authRoutes = require('./src/routes/auth.routes');
+const origenesAuth = (process.env.AUTH_ALLOWED_ORIGINS ?? 'http://localhost:3000')
+    .split(',')
+    .map(origen => origen.trim())
+    .filter(Boolean);
+
+app.use('/api/auth', cors({ origin: origenesAuth, credentials: true }), express.json({ limit: '4kb' }), authRoutes);
+
 // Middlewares para procesar JSON y permitir conexión del frontend
 app.use(cors());
 app.use(express.json());
