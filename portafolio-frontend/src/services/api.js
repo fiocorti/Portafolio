@@ -2,7 +2,7 @@
 import { mockRequest } from '../mocks/mockData';
 
 // Las solicitudes se envían mediante el proxy configurado en package.json.
-const API_URL = '';
+const API_URL = 'http://localhost:3001';
 
 const USE_MOCKS = process.env.REACT_APP_USE_MOCKS === 'true';
 
