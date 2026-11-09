@@ -23,7 +23,7 @@ app.use(cors({
             callback(new Error('Bloqueado por CORS: Acceso denegado'));
         }
     },
-    credentials: true // <-- AGREGAR ESTA LÍNEA
+    credentials: true // <-- agregar esta linea por los credenciales que utiliza el front (cookies, auth headers, etc)
 }));
 
 // 🛡️ 2. SEGURIDAD: RATE LIMITING (Anti-Spam)

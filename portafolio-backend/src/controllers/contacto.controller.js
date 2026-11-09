@@ -3,40 +3,33 @@ const nodemailer = require('nodemailer');
 
 // EL VISITANTE HACE UNA CONSULTA (Solo se guarda en la BD)
 const recibirConsulta = async (req, res) => {
-    const { id_admin, id_servicio, nombre_remitente, email_remitente, motivo, contenido } = req.body;
+    const { id_servicio, nombre_remitente, email_remitente, motivo, contenido } = req.body;
     const conexion = await pool.getConnection();
 
     try {
         await conexion.beginTransaction();
 
-        // Guardamos el encabezado de la consulta
-        const queryConsulta = `
-            INSERT INTO consultas (id_admin, id_servicio, nombre_remitente, email_remitente, motivo) 
-            VALUES (?, ?, ?, ?, ?)
-        `;
-        const [resultadoConsulta] = await conexion.query(queryConsulta, [id_admin, id_servicio, nombre_remitente, email_remitente, motivo]);
-        const idConsultaNueva = resultadoConsulta.insertId;
+        // Insertamos el encabezado de la consulta
+        const [resultConsulta] = await conexion.query(`
+            INSERT INTO consultas (id_servicio, nombre_remitente, email_remitente, motivo, estado) 
+            VALUES (?, ?, ?, ?, 'pendiente')
+        `, [id_servicio || null, nombre_remitente, email_remitente, motivo]);
 
-        // Guardamos el mensaje asociándolo a la nueva consulta
-        const queryMensaje = `
+        const idConsultaGenerada = resultConsulta.insertId;
+
+        // Insertamos el mensaje inicial asociado
+        await conexion.query(`
             INSERT INTO mensajes (id_consulta, contenido, es_respuesta_admin, leido) 
             VALUES (?, ?, FALSE, FALSE)
-        `;
-        await conexion.query(queryMensaje, [idConsultaNueva, contenido]);
+        `, [idConsultaGenerada, contenido]);
 
-        await conexion.commit(); 
-        
-        // Respondemos al frontend de las chicas sin mandar ningún mail
-        res.status(201).json({ 
-            exito: true, 
-            mensaje: 'Consulta registrada correctamente en la base de datos',
-            id_consulta: idConsultaNueva 
-        });
+        await conexion.commit();
+        res.status(201).json({ exito: true, mensaje: 'Consulta enviada con éxito' });
 
     } catch (error) {
         await conexion.rollback();
-        console.error('Error al procesar la consulta:', error);
-        res.status(500).json({ exito: false, mensaje: 'Error interno al procesar la consulta' });
+        console.error('Error al recibir la consulta:', error);
+        res.status(500).json({ exito: false, mensaje: 'Error interno al registrar la consulta' });
     } finally {
         conexion.release();
     }
@@ -113,4 +106,64 @@ const responderConsulta = async (req, res) => {
     }
 };
 
-module.exports = { recibirConsulta, responderConsulta };
+// OBTENER TODAS LAS CONSULTAS (Para la tabla/bandeja del panel)
+const obtenerConsultas = async (req, res) => {
+    try {
+        const query = `
+            SELECT c.id_consulta, c.nombre_remitente, c.email_remitente, c.motivo, c.estado, c.fecha_inicio,
+                   s.nombre AS nombre_servicio
+            FROM consultas c
+            LEFT JOIN servicios s ON c.id_servicio = s.id_servicio
+            ORDER BY c.fecha_inicio DESC
+        `;
+        const [consultas] = await pool.query(query);
+        
+        res.status(200).json({
+            exito: true,
+            consultas
+        });
+    } catch (error) {
+        console.error('Error al obtener las consultas:', error);
+        res.status(500).json({ exito: false, mensaje: 'Error al obtener la lista de consultas' });
+    }
+};
+
+// OBTENER UNA CONSULTA ESPECÍFICA CON SUS MENSAJES (Para el chat/detalle)
+const obtenerConsultaPorId = async (req, res) => {
+    const { id } = req.params;
+    const conexion = await pool.getConnection();
+
+    try {
+        const [consultas] = await conexion.query(`
+            SELECT c.*, s.nombre AS nombre_servicio 
+            FROM consultas c 
+            LEFT JOIN servicios s ON c.id_servicio = s.id_servicio 
+            WHERE c.id_consulta = ?
+        `, [id]);
+
+        if (consultas.length === 0) {
+            return res.status(404).json({ exito: false, mensaje: 'Consulta no encontrada' });
+        }
+
+        const [mensajes] = await conexion.query(`
+            SELECT id_mensaje, contenido, es_respuesta_admin, leido, fecha_envio 
+            FROM mensajes 
+            WHERE id_consulta = ? 
+            ORDER BY fecha_envio ASC
+        `, [id]);
+
+        res.status(200).json({
+            exito: true,
+            consulta: consultas[0],
+            mensajes
+        });
+
+    } catch (error) {
+        console.error('Error al obtener el detalle de la consulta:', error);
+        res.status(500).json({ exito: false, mensaje: 'Error al obtener el detalle' });
+    } finally {
+        conexion.release();
+    }
+};
+
+module.exports = { recibirConsulta, responderConsulta, obtenerConsultas, obtenerConsultaPorId };

@@ -36,20 +36,17 @@ const crearProyecto = async (req, res) => {
     const conexion = await pool.getConnection();
 
     try {
-        const { nombre, descripcion, repositorio_url, demo_url, estado, tecnologias } = req.body;
+        // Ahora esperamos tecnologias_ids en lugar de objetos
+        const { nombre, descripcion, repositorio_url, demo_url, estado, tecnologias_ids } = req.body;
         const id_admin = 1; 
         const estadoFinal = estado || 'Borrador';
-        
-        // 1. Atrapamos la URL de la imagen que subió Multer/Cloudinary (si es que enviaron una)
         const imagen_url = req.file ? req.file.path : null;
 
-        // 2. Parseamos las tecnologías porque desde FormData llegan como un String de texto
         let tecnologiasArray = [];
-        if (tecnologias) {
-            tecnologiasArray = typeof tecnologias === 'string' ? JSON.parse(tecnologias) : tecnologias;
+        if (tecnologias_ids) {
+            tecnologiasArray = typeof tecnologias_ids === 'string' ? JSON.parse(tecnologias_ids) : tecnologias_ids;
         }
 
-        // 3. Validar la regla de negocio
         if (tecnologiasArray.length === 0) {
             return res.status(400).json({ 
                 exito: false, 
@@ -59,7 +56,6 @@ const crearProyecto = async (req, res) => {
 
         await conexion.beginTransaction();
 
-        // 4. Insertamos el proyecto con su imagen_url de Cloudinary
         const queryProyecto = `
             INSERT INTO proyectos 
             (id_admin, nombre, descripcion, repositorio_url, imagen_url, demo_url, fecha_creacion, estado) 
@@ -68,39 +64,20 @@ const crearProyecto = async (req, res) => {
         const [resProyecto] = await conexion.query(queryProyecto, [id_admin, nombre, descripcion, repositorio_url, imagen_url, demo_url, estadoFinal]);
         const idProyectoNuevo = resProyecto.insertId;
 
-        // 5. Procesamos las tecnologías una por una
-        for (const tec of tecnologiasArray) {
-            let idTecnologia;
-
-            const [existeTec] = await conexion.query('SELECT id_tecnologia FROM tecnologias WHERE nombre = ?', [tec.nombre]);
-
-            if (existeTec.length > 0) {
-                idTecnologia = existeTec[0].id_tecnologia;
-            } else {
-                const queryNuevaTec = 'INSERT INTO tecnologias (nombre, categoria) VALUES (?, ?)';
-                const [resTecnologia] = await conexion.query(queryNuevaTec, [tec.nombre, tec.categoria]);
-                idTecnologia = resTecnologia.insertId;
-            }
-
-            await conexion.query(
-                'INSERT INTO proyecto_tecnologia (id_proyecto, id_tecnologia) VALUES (?, ?)', 
-                [idProyectoNuevo, idTecnologia]
-            );
-        }
+        // Inserción masiva de la relación (mucho más rápido que el for loop)
+        const valoresMultiples = tecnologiasArray.map(id_tec => [idProyectoNuevo, id_tec]);
+        await conexion.query(
+            'INSERT INTO proyecto_tecnologia (id_proyecto, id_tecnologia) VALUES ?', 
+            [valoresMultiples]
+        );
 
         await conexion.commit();
-
-        res.status(201).json({
-            exito: true,
-            mensaje: '¡Proyecto y tecnologías guardados con éxito en la BD y Cloudinary!',
-            id_nuevo: idProyectoNuevo,
-            imagen_url: imagen_url
-        });
+        res.status(201).json({ exito: true, mensaje: 'Proyecto guardado con éxito', id_nuevo: idProyectoNuevo, imagen_url });
 
     } catch (error) {
         await conexion.rollback();
-        console.error('Error en la transacción:', error);
-        res.status(500).json({ exito: false, mensaje: 'Error al guardar el proyecto completo' });
+        console.error('Error:', error);
+        res.status(500).json({ exito: false, mensaje: 'Error al guardar el proyecto' });
     } finally {
         conexion.release();
     }
