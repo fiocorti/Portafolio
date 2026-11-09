@@ -17,13 +17,13 @@ const rutasPermitidas = [
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Permitimos peticiones sin origin (como las tuyas desde Thunder Client o Postman) y las peticiones que vengan exactamente de nuestra lista blanca
         if (!origin || rutasPermitidas.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error('Bloqueado por CORS: Acceso denegado'));
         }
-    }
+    },
+    credentials: true // <-- AGREGAR ESTA LÍNEA
 }));
 
 // 🛡️ 2. SEGURIDAD: RATE LIMITING (Anti-Spam)
