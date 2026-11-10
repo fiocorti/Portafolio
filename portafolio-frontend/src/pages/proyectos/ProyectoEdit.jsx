@@ -1,31 +1,61 @@
-
 import React from 'react';
-import { useHistory } from 'react-router-dom';
-import PageHeader from '../../components/PageHeader';
-import ErrorMessage from '../../components/ErrorMessage';
+import EntityFormPage from '../../components/EntityFormPage';
+import EntityPreview from '../../components/EntityPreview';
+import proyectosService from '../../services/proyectosService';
+
+function prepararProyecto(values) {
+  return {
+    nombre: (values.titulo || '').trim(),
+    descripcion: (values.descripcion || '').trim(),
+    imagen_url: values.imagen || null,
+    repositorio_url: values.repositorio || null,
+    demo_url: values.demo || null,
+    estado: values.estado || 'Borrador',
+    tecnologias: (values.tecnologias || []).map(tecnologia => ({
+      nombre: typeof tecnologia === 'string'
+        ? tecnologia
+        : tecnologia.nombre,
+      categoria: typeof tecnologia === 'string'
+        ? ''
+        : tecnologia.categoria || ''
+    }))
+  };
+}
+
+function cargarProyecto(proyecto) {
+  return {
+    titulo: proyecto.titulo || proyecto.nombre || '',
+    descripcion: proyecto.descripcion || '',
+    imagen: proyecto.imagen || proyecto.imagen_url || '',
+    repositorio: proyecto.repositorio || proyecto.repositorio_url || '',
+    demo: proyecto.demo || proyecto.demo_url || '',
+    estado: proyecto.estado || 'Borrador',
+    tecnologias: proyecto.tecnologias || []
+  };
+}
 
 export default function ProyectoEdit() {
-  const history = useHistory();
-
   return (
-    <>
-      <PageHeader
-        title="Edición de proyectos"
-        description="La edición estará disponible cuando el backend incorpore su endpoint."
-        backTo="/admin/proyectos"
-      />
-
-      <div className="form-stack">
-        <ErrorMessage message="El backend todavía no dispone de PUT /api/proyectos/:id. Los proyectos existentes pueden consultarse, pero no modificarse desde este formulario." />
-
-        <button
-          type="button"
-          className="button button-secondary"
-          onClick={() => history.push('/admin/proyectos')}
-        >
-          Volver a proyectos
-        </button>
-      </div>
-    </>
+    <EntityFormPage
+      title="Editar proyecto"
+      description="Modificá los datos del proyecto seleccionado."
+      service={proyectosService}
+      basePath="/admin/proyectos"
+      kind="proyecto"
+      fields={[
+        'titulo',
+        'descripcion',
+        'imagen',
+        'tecnologias',
+        'repositorio',
+        'demo',
+        'estado'
+      ]}
+      transformIn={cargarProyecto}
+      transformOut={prepararProyecto}
+      renderPreview={values => (
+        <EntityPreview values={values} />
+      )}
+    />
   );
 }

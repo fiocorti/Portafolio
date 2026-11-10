@@ -59,6 +59,7 @@ function obtenerTecnologiasDelProyecto(proyecto) {
 
 export default function TecnologiasList() {
   const [tecnologias, setTecnologias] = useState([]);
+  const [tecnologiasEnUso, setTecnologiasEnUso] = useState([]);
   const [proyectos, setProyectos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -73,9 +74,14 @@ export default function TecnologiasList() {
     setError('');
 
     try {
-      const [tecnologiasData, proyectosData] = await Promise.all([
+      const [
+        tecnologiasData,
+        proyectosData,
+        tecnologiasEnUsoData
+      ] = await Promise.all([
         tecnologiasService.list(),
-        proyectosService.list()
+        proyectosService.list(),
+        tecnologiasService.listEnUso()
       ]);
 
       setTecnologias(
@@ -84,6 +90,12 @@ export default function TecnologiasList() {
 
       setProyectos(
         Array.isArray(proyectosData) ? proyectosData : []
+      );
+
+      setTecnologiasEnUso(
+        Array.isArray(tecnologiasEnUsoData)
+          ? tecnologiasEnUsoData
+          : []
       );
     } catch (e) {
       setError(
@@ -120,7 +132,12 @@ export default function TecnologiasList() {
     return cantidades;
   }, [proyectos]);
 
+  // El estado En uso / Sin uso proviene del endpoint del backend.
   const tecnologiasConUso = useMemo(() => {
+    const idsEnUso = new Set(
+      tecnologiasEnUso.map(tecnologia => String(tecnologia.id))
+    );
+
     return tecnologias.map(tecnologia => {
       const nombreNormalizado = normalizarNombre(tecnologia.nombre);
       const cantidadProyectos = usoTecnologias[nombreNormalizado] || 0;
@@ -128,10 +145,10 @@ export default function TecnologiasList() {
       return {
         ...tecnologia,
         cantidadProyectos,
-        enUso: cantidadProyectos > 0
+        enUso: idsEnUso.has(String(tecnologia.id))
       };
     });
-  }, [tecnologias, usoTecnologias]);
+  }, [tecnologias, tecnologiasEnUso, usoTecnologias]);
 
   // Estadísticas generales.
   const estadisticas = useMemo(() => {
@@ -191,6 +208,10 @@ export default function TecnologiasList() {
       await tecnologiasService.remove(deleteItem.id);
 
       setTecnologias(current =>
+        current.filter(item => item.id !== deleteItem.id)
+      );
+
+      setTecnologiasEnUso(current =>
         current.filter(item => item.id !== deleteItem.id)
       );
 

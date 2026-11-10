@@ -1,7 +1,7 @@
 
 import { mockRequest } from '../mocks/mockData';
 
-// Las solicitudes se envían mediante el proxy configurado en package.json.
+// Las solicitudes se envían al backend en el puerto 3001.
 const API_URL = 'http://localhost:3001';
 
 const USE_MOCKS = process.env.REACT_APP_USE_MOCKS === 'true';
@@ -16,6 +16,7 @@ export class ApiError extends Error {
 }
 
 export async function request(path, options = {}) {
+  // Si está activado el modo de pruebas, utiliza los datos simulados.
   if (USE_MOCKS) {
     return mockRequest(path, options);
   }
@@ -30,6 +31,7 @@ export async function request(path, options = {}) {
 
   let body = options.body;
 
+  // Convierte los objetos a JSON, excepto FormData.
   if (
     body &&
     typeof body === 'object' &&
@@ -62,9 +64,16 @@ export async function request(path, options = {}) {
     ? await response.json().catch(() => ({}))
     : await response.text();
 
+  // Reconoce los distintos formatos de error del backend.
   if (!response.ok) {
+    const mensaje =
+      data?.mensaje ||
+      data?.message ||
+      data?.error ||
+      `Error HTTP ${response.status}`;
+
     throw new ApiError(
-      data?.message || data?.error || `Error HTTP ${response.status}`,
+      mensaje,
       response.status,
       data
     );

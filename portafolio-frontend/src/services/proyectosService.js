@@ -19,8 +19,10 @@ function adaptarProyecto(proyecto) {
 }
 
 const proyectosService = {
+  // Obtener todos los proyectos
   async list() {
     const respuesta = await service.list();
+
     const proyectos = Array.isArray(respuesta)
       ? respuesta
       : respuesta.datos || [];
@@ -28,6 +30,7 @@ const proyectosService = {
     return proyectos.map(adaptarProyecto);
   },
 
+  // Obtener un proyecto por ID
   async get(id) {
     const proyectos = await this.list();
 
@@ -36,20 +39,36 @@ const proyectosService = {
     ) || null;
   },
 
+  // Crear proyecto con imagen y tecnologías
   async create(payload) {
-    return service.create(payload);
+    const formData = new FormData();
+
+    formData.append('nombre', payload.nombre);
+    formData.append('descripcion', payload.descripcion || '');
+    formData.append('repositorio_url', payload.repositorio_url || '');
+    formData.append('demo_url', payload.demo_url || '');
+    formData.append('estado', payload.estado || 'Borrador');
+
+    formData.append(
+      'tecnologias_ids',
+      JSON.stringify(payload.tecnologias_ids || [])
+    );
+
+    if (payload.imagen instanceof File) {
+      formData.append('imagen', payload.imagen);
+    }
+
+    return service.create(formData);
   },
 
-  async update() {
-    throw new Error(
-      'La edición de proyectos todavía no está disponible en el backend.'
-    );
+  // Editar proyecto
+  async update(id, payload) {
+    return service.update(id, payload);
   },
 
-  async remove() {
-    throw new Error(
-      'La eliminación de proyectos todavía no está disponible en el backend.'
-    );
+  // Eliminar proyecto
+  async remove(id) {
+    return service.remove(id);
   }
 };
 
