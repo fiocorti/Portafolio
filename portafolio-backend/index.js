@@ -25,6 +25,7 @@ app.use(cors({
     credentials: true
 }));
 require('./src/instalarCuentas')(app);
+require('./src/instalarVisitas')(app);
 app.use(express.json());
 
 // Ruta de prueba inicial
