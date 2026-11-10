@@ -1,20 +1,38 @@
 const express = require('express');
 const router = express.Router();
-const { recibirConsulta, 
-    responderConsulta, 
+// const rateLimit = require('express-rate-limit'); // Lo comentamos por ahora
+
+const { 
+    recibirConsulta, 
     obtenerConsultas, 
-    obtenerConsultaPorId } = require('../controllers/contacto.controller');
+    responderConsulta 
+} = require('../controllers/contacto.controller');
 
-// El visitante manda su mensaje desde el portafolio
-router.post('/', recibirConsulta);
+// --- CONFIGURACIÓN DEL LIMITADOR (Comentado para pruebas) ---
+/*
+const limiteConsultas = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hora
+    max: 5, // 5 consultas por hora
+    message: { 
+        exito: false, 
+        mensaje: 'Solo podés enviar 5 mensajes de contacto por hora. Intentá más tarde.' 
+    }
+});
+*/
 
-// Vos mandás tu respuesta desde el dashboard de administración
-router.post('/responder', responderConsulta);
-
-// Ruta GET para listar todas las consultas en la tabla de React
+// GET: /api/contacto 
+// Para que el admin vea las consultas en el panel (NUNCA lleva limitador)
 router.get('/', obtenerConsultas);
 
-// Ruta GET para ver el detalle de una consulta y sus mensajes por ID
-router.get('/:id', obtenerConsultaPorId);
+// POST: /api/contacto 
+// Formulario público. Por ahora está LIBRE para pruebas.
+router.post('/', recibirConsulta);
+
+// Cuando salgan a producción, comentás la línea de arriba y descomentás esta:
+// router.post('/', limiteConsultas, recibirConsulta);
+
+// POST: /api/contacto/responder 
+// Para que vos respondas (NUNCA lleva limitador porque vas a estar logueado)
+router.post('/responder', responderConsulta);
 
 module.exports = router;

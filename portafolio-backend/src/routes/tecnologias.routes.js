@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-const { obtenerTecnologias, 
+const { 
+    obtenerTecnologias, 
     obtenerTecnologiasEnUso, 
     crearTecnologia,
     eliminarTecnologia } = require('../controllers/tecnologias.controller');

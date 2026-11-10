@@ -28,6 +28,7 @@ app.use(cors({
 
 // 🛡️ 2. SEGURIDAD: RATE LIMITING (Anti-Spam)
 // Límite general para TODA la API: Máximo 100 peticiones cada 15 minutos por computadora (IP)
+/*
 const limitadorGeneral = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos en milisegundos
     max: 100, // Límite de peticiones por ventana de tiempo
@@ -38,19 +39,10 @@ const limitadorGeneral = rateLimit({
     standardHeaders: true, // Devuelve información del límite en los headers
     legacyHeaders: false, // Deshabilita headers viejos
 });
-
-// Límite más estricto exclusivo para la ruta de correos para evitar que te saturen el Gmail
-const limitadorCorreos = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hora en milisegundos
-    max: 5, // Máximo 5 consultas por hora
-    message: { 
-        exito: false, 
-        mensaje: 'Solo podés enviar 5 mensajes de contacto por hora. Intentá más tarde.' 
-    }
-});
+*/
 
 // Aplicamos el límite general a nivel global (afecta a todas las rutas a partir de acá)
-app.use(limitadorGeneral);
+// app.use(limitadorGeneral); // LINEA COMENTADA MIESTRAS SE HAGAN PRUEBAS EN EL FRONTEND
 
 
 // 3. MIDDLEWARES BÁSICOS
@@ -79,9 +71,7 @@ app.use('/api/proyectos', proyectosRoutes);
 app.use('/api/servicios', serviciosRoutes);
 app.use('/api/tecnologias', tecnologiasRoutes);
 app.use('/api/experiencias', experienciasRoutes);
-
-// A la ruta de contacto le inyectamos su limitador estricto (limitadorCorreos) justo en el medio
-app.use('/api/contacto', limitadorCorreos, contactoRoutes);
+app.use('/api/contacto', contactoRoutes);
 
 // 🚀 6. INICIO DEL SERVIDOR
 // Levantar el servidor SIEMPRE como última instrucción

@@ -4,6 +4,7 @@ const nodemailer = require('nodemailer');
 // EL VISITANTE HACE UNA CONSULTA (Solo se guarda en la BD)
 const recibirConsulta = async (req, res) => {
     const { id_servicio, nombre_remitente, email_remitente, motivo, contenido } = req.body;
+    const id_admin = 1; // Asignamos tu ID automáticamente en el backend
     const conexion = await pool.getConnection();
 
     try {
@@ -11,10 +12,9 @@ const recibirConsulta = async (req, res) => {
 
         // Insertamos el encabezado de la consulta
         const [resultConsulta] = await conexion.query(`
-            INSERT INTO consultas (id_servicio, nombre_remitente, email_remitente, motivo, estado) 
-            VALUES (?, ?, ?, ?, 'pendiente')
-        `, [id_servicio || null, nombre_remitente, email_remitente, motivo]);
-
+            INSERT INTO consultas (id_admin, id_servicio, nombre_remitente, email_remitente, motivo, estado) 
+            VALUES (?, ?, ?, ?, ?, 'pendiente')
+        `, [id_admin, id_servicio || null, nombre_remitente, email_remitente, motivo]);
         const idConsultaGenerada = resultConsulta.insertId;
 
         // Insertamos el mensaje inicial asociado
