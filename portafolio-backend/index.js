@@ -11,10 +11,20 @@ const origenesAuth = (process.env.AUTH_ALLOWED_ORIGINS ?? 'http://localhost:3000
     .map(origen => origen.trim())
     .filter(Boolean);
 
-app.use('/api/auth', cors({ origin: origenesAuth, credentials: true }), express.json({ limit: '4kb' }), authRoutes);
+
 
 // Middlewares para procesar JSON y permitir conexión del frontend
-app.use(cors());
+app.use(cors({
+    origin: (
+        process.env.AUTH_ALLOWED_ORIGINS ||
+        'http://localhost:3000,http://localhost:5173'
+    )
+        .split(',')
+        .map(origen => origen.trim())
+        .filter(Boolean),
+    credentials: true
+}));
+require('./src/instalarCuentas')(app);
 app.use(express.json());
 
 // Ruta de prueba inicial
