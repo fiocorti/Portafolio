@@ -58,6 +58,7 @@ const serviciosRoutes = require('./src/routes/servicios.routes');
 const tecnologiasRoutes = require('./src/routes/tecnologias.routes');
 const experienciasRoutes = require('./src/routes/experiencias.routes');
 const contactoRoutes = require('./src/routes/contacto.routes');
+const dashboardRoutes = require('./src/routes/dashboard.routes');
 
 // Ruta de prueba inicial (ping)
 app.get('/api/test', (req, res) => {
@@ -72,6 +73,7 @@ app.use('/api/servicios', serviciosRoutes);
 app.use('/api/tecnologias', tecnologiasRoutes);
 app.use('/api/experiencias', experienciasRoutes);
 app.use('/api/contacto', contactoRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // 🚀 6. INICIO DEL SERVIDOR
 // Levantar el servidor SIEMPRE como última instrucción
@@ -79,3 +81,5 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
+
+

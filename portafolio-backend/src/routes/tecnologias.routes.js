@@ -5,16 +5,15 @@ const {
     obtenerTecnologias, 
     obtenerTecnologiasEnUso, 
     crearTecnologia,
-    eliminarTecnologia } = require('../controllers/tecnologias.controller');
-
-const upload = require('../middlewares/upload'); // Traemos nuestro middleware de Cloudinary
+    eliminarTecnologia 
+} = require('../controllers/tecnologias.controller');
 
 // GET: /api/tecnologias
 router.get('/', obtenerTecnologias);
 router.get('/en-uso', obtenerTecnologiasEnUso);
 
 // POST: /api/tecnologias
-router.post('/', upload.single('icono'), crearTecnologia);
+router.post('/', crearTecnologia);
 
 // DELETE: /api/tecnologias/:id
 router.delete('/:id', eliminarTecnologia);

@@ -34,26 +34,24 @@ const obtenerTecnologiasEnUso = async (req, res) => {
 // CREAR TECNOLOGÍA (Validando que no exista un duplicado)
 const crearTecnologia = async (req, res) => {
     try {
-        const { nombre, categoria } = req.body;
+        // Ahora atrapamos el link del ícono directamente desde el body, junto al nombre y categoría
+        const { nombre, categoria, icono_url } = req.body;
         
-        // Atrapamos la URL de la imagen que subió Multer/Cloudinary (si enviaron una)
-        // Si no mandaron ícono, queda en null, haciéndolo totalmente opcional
-        const icono = req.file ? req.file.path : null;
-
         // Validamos que no exista otra con el mismo nombre
         const [existe] = await pool.query('SELECT * FROM tecnologias WHERE LOWER(nombre) = LOWER(?)', [nombre]);
         if (existe.length > 0) {
             return res.status(400).json({ exito: false, mensaje: 'Esta tecnología ya está registrada.' });
         }
 
-        // Insertamos en la base de datos (agregando la columna icono)
-        const query = 'INSERT INTO tecnologias (nombre, categoria, icono) VALUES (?, ?, ?)';
-        const [resultado] = await pool.query(query, [nombre, categoria, icono]);
+        // Insertamos en la base de datos usando el nombre correcto de columna (icono_url)
+        const query = 'INSERT INTO tecnologias (nombre, categoria, icono_url) VALUES (?, ?, ?)';
+        // Si no mandan ícono, guardamos null para que siga siendo opcional
+        const [resultado] = await pool.query(query, [nombre, categoria, icono_url || null]);
 
         res.status(201).json({ 
             exito: true, 
             id_tecnologia: resultado.insertId, 
-            icono: icono,
+            icono_url: icono_url,
             mensaje: 'Tecnología creada correctamente' 
         });
     } catch (error) {
