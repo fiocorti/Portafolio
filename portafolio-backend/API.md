@@ -47,6 +47,17 @@ Devuelve `{ "exito": true, "user": { ... } }` con los datos de la cuenta. React 
 ### Cerrar la sesión del navegador con `POST /api/auth/logout`
 
 Borra la cookie y devuelve `{ "exito": true }`. Los tokens enviados manualmente como Bearer vencen a las 8 horas.
+- **Respuesta Exitosa (200 OK):**
+  ```json
+  {
+    "exito": true,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5...",
+    "usuario": {
+      "id_usuario": 1,
+      "nombre": "Lucas"
+    }
+  }
+  ```
 
 ---
 
@@ -55,7 +66,7 @@ Borra la cookie y devuelve `{ "exito": true }`. Los tokens enviados manualmente 
 ### Obtener todos los Proyectos
 - **Ruta:** `/proyectos`
 - **Método:** `GET`
-- **Respuesta Exitosa (200 OK):** Devuelve un arreglo con los proyectos y sus tecnologías asociadas.
+- **Respuesta Exitosa (200 OK):** Devuelve un arreglo con los proyectos y sus tecnologías asociadas concatenadas.
 
 ### Crear un nuevo Proyecto (Con Imagen)
 - **Ruta:** `/proyectos`
@@ -71,6 +82,19 @@ Borra la cookie y devuelve `{ "exito": true }`. Los tokens enviados manualmente 
   - `imagen` (Archivo - File): Solo formatos jpg, png, webp, avif.
 - **Respuesta Exitosa (201 Created):** `{"exito": true, "mensaje": "...", "id_nuevo": 1, "imagen_url": "https://res.cloudinary..."}`
 
+### Actualizar un Proyecto
+- **Ruta:** `/proyectos/:id`
+- **Método:** `PUT`
+- **Descripción:** Actualiza los datos del proyecto y reemplaza sus tecnologías asociadas en la tabla intermedia.
+- **Body requerido (JSON):** Igual al del POST (versión sin imagen).
+- **Respuestas:** `200 OK` (Éxito), `404 Not Found` (Proyecto no encontrado).
+
+### Eliminar un Proyecto
+- **Ruta:** `/proyectos/:id`
+- **Método:** `DELETE`
+- **Descripción:** Elimina el proyecto y limpia su relación con las tecnologías (borrado en cascada). Las tecnologías NO se borran del sistema.
+- **Respuestas:** `200 OK` (Éxito), `404 Not Found`.
+
 ---
 
 ## 3. Servicios
@@ -78,6 +102,7 @@ Borra la cookie y devuelve `{ "exito": true }`. Los tokens enviados manualmente 
 ### Obtener todos los Servicios
 - **Ruta:** `/servicios`
 - **Método:** `GET`
+- **Respuesta Exitosa (200 OK):** Devuelve un arreglo con la lista completa de servicios.
 
 ### Crear un nuevo Servicio
 - **Ruta:** `/servicios`
@@ -92,6 +117,20 @@ Borra la cookie y devuelve `{ "exito": true }`. Los tokens enviados manualmente 
     "estado": "Publicado"
   }
   ```
+- **Respuesta Exitosa (200 OK):** `{"exito": true, "mensaje": "Servicio creado..."}`
+
+### Actualizar un Servicio
+- **Ruta:** `/servicios/:id`
+- **Método:** `PUT`
+- **Descripción:** Actualiza todos los datos de un servicio existente.
+- **Body requerido (JSON):** Igual al del POST.
+- **Respuestas:** `200 OK` (Éxito), `404 Not Found`.
+
+### Eliminar un Servicio
+- **Ruta:** `/servicios/:id`
+- **Método:** `DELETE`
+- **Descripción:** Elimina un servicio de la base de datos.
+- **Respuestas:** `200 OK` (Éxito), `404 Not Found`.
 
 ---
 
@@ -100,6 +139,17 @@ Borra la cookie y devuelve `{ "exito": true }`. Los tokens enviados manualmente 
 ### Obtener todas las Tecnologías
 - **Ruta:** `/tecnologias`
 - **Método:** `GET`
+- **Descripción:** Devuelve el catálogo de tecnologías ordenadas por categoría y nombre.
+- **Respuesta Exitosa (200 OK):** Arreglo de objetos con las tecnologías.
+
+### Eliminar una Tecnología
+- **Ruta:** `/tecnologias/:id`
+- **Método:** `DELETE`
+- **Descripción:** Elimina una tecnología. **Restricción:** Solo se permite si no está asociada a ningún proyecto (huérfana).
+- **Respuestas:**
+  - `200 OK`: Eliminada con éxito.
+  - `409 Conflict`: Bloqueado porque está en uso.
+  - `404 Not Found`: No encontrada.
 
 ---
 
@@ -108,6 +158,7 @@ Borra la cookie y devuelve `{ "exito": true }`. Los tokens enviados manualmente 
 ### Obtener todas las Experiencias
 - **Ruta:** `/experiencias`
 - **Método:** `GET`
+- **Respuesta Exitosa (200 OK):** Arreglo de objetos con el historial de experiencias.
 
 ### Crear una nueva Experiencia
 - **Ruta:** `/experiencias`
@@ -118,12 +169,13 @@ Borra la cookie y devuelve `{ "exito": true }`. Los tokens enviados manualmente 
     "id_admin": 1,
     "titulo": "Desarrollador Backend",
     "categoria": "Proyectos Académicos",
-    "descripcion": "Diseño de API REST...",
+    "descripcion": "Diseño de API REST para portafolio...",
     "fecha_inicio": "2026-08-01",
     "fecha_fin": "2026-11-06",
     "estado": "Publicado"
   }
   ```
+- **Respuesta Exitosa (201 Created):** `{"exito": true, "mensaje": "Experiencia guardada exitosamente"}`
 
 ---
 
