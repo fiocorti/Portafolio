@@ -14,6 +14,28 @@ const rutasPermitidas = [
     'http://localhost:5173'  // Típico de Vite
     // NOTA: Acá agregarás el link real (ej: 'https://midominio.com') cuando lo subas a producción
 ];
+const authRoutes = require('./src/routes/auth.routes');
+const origenesAuth = (process.env.AUTH_ALLOWED_ORIGINS ?? 'http://localhost:3000')
+    .split(',')
+    .map(origen => origen.trim())
+    .filter(Boolean);
+
+
+
+// Middlewares para procesar JSON y permitir conexión del frontend
+app.use(cors({
+    origin: (
+        process.env.AUTH_ALLOWED_ORIGINS ||
+        'http://localhost:3000,http://localhost:5173'
+    )
+        .split(',')
+        .map(origen => origen.trim())
+        .filter(Boolean),
+    credentials: true
+}));
+require('./src/instalarCuentas')(app);
+require('./src/instalarVisitas')(app);
+app.use(express.json());
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -37,16 +59,6 @@ const limitadorGeneral = rateLimit({
     },
     standardHeaders: true, // Devuelve información del límite en los headers
     legacyHeaders: false, // Deshabilita headers viejos
-});
-
-// Límite más estricto exclusivo para la ruta de correos para evitar que te saturen el Gmail
-const limitadorCorreos = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hora en milisegundos
-    max: 5, // Máximo 5 consultas por hora
-    message: { 
-        exito: false, 
-        mensaje: 'Solo podés enviar 5 mensajes de contacto por hora. Intentá más tarde.' 
-    }
 });
 
 // Aplicamos el límite general a nivel global (afecta a todas las rutas a partir de acá)
@@ -80,8 +92,6 @@ app.use('/api/servicios', serviciosRoutes);
 app.use('/api/tecnologias', tecnologiasRoutes);
 app.use('/api/experiencias', experienciasRoutes);
 
-// A la ruta de contacto le inyectamos su limitador estricto (limitadorCorreos) justo en el medio
-app.use('/api/contacto', limitadorCorreos, contactoRoutes);
 
 // 🚀 6. INICIO DEL SERVIDOR
 // Levantar el servidor SIEMPRE como última instrucción
