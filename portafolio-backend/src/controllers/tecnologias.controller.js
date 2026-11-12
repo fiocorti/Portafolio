@@ -60,6 +60,33 @@ const crearTecnologia = async (req, res) => {
     }
 };
 
+// EDITAR TECNOLOGÍA (tiene en cuenta que no se puede cambiar el nombre a uno que ya exista)
+const editarTecnologia = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nombre, categoria, icono_url } = req.body;
+
+        // Validamos que el nuevo nombre no esté siendo usado por OTRA tecnología distinta a la que editamos
+        const [existe] = await pool.query('SELECT * FROM tecnologias WHERE LOWER(nombre) = LOWER(?) AND id_tecnologia != ?', [nombre, id]);
+        if (existe.length > 0) {
+            return res.status(400).json({ exito: false, mensaje: 'Ya existe otra tecnología registrada con este nombre.' });
+        }
+
+        // Actualizamos los datos
+        const query = 'UPDATE tecnologias SET nombre = ?, categoria = ?, icono_url = ? WHERE id_tecnologia = ?';
+        const [resultado] = await pool.query(query, [nombre, categoria, icono_url || null, id]);
+
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({ exito: false, mensaje: 'Tecnología no encontrada.' });
+        }
+
+        res.json({ exito: true, mensaje: 'Tecnología actualizada correctamente.' });
+    } catch (error) {
+        console.error('Error al editar tecnología:', error);
+        res.status(500).json({ exito: false, mensaje: 'Error interno al intentar editar.' });
+    }
+};
+
 // ELIMINAR TECNOLOGÍA (Solo se puede eliminar las que no estan en uso)
 const eliminarTecnologia = async (req, res) => {
     try {
@@ -89,4 +116,4 @@ const eliminarTecnologia = async (req, res) => {
     }
 };
 
-module.exports = { obtenerTecnologias, obtenerTecnologiasEnUso, crearTecnologia, eliminarTecnologia };
+module.exports = { obtenerTecnologias, obtenerTecnologiasEnUso, crearTecnologia, editarTecnologia, eliminarTecnologia };
