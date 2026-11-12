@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { registrarUsuario } from "../services/portafolioApi";
 
 function Register() {
   const [nombre, setNombre] = useState("");
@@ -10,25 +11,29 @@ function Register() {
 
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
   const limpiarMensajes = () => {
     setError("");
     setMensaje("");
   };
 
-  const manejarSubmit = (event) => {
+  
+  const manejarSubmit = async (event) => {
     event.preventDefault();
+
+    if (enviando) return;
 
     setError("");
     setMensaje("");
 
-    // Validar nombre
+    // Validaciones del formulario
     if (!nombre.trim()) {
-      setError("Ingresá tu nombre completo.");
+      setError("Ingresá tu nombre.");
       return;
     }
 
-    // Validar longitud de contraseña
     if (contrasena.length < 8) {
       setError(
         "La contraseña debe tener al menos 8 caracteres."
@@ -36,17 +41,52 @@ function Register() {
       return;
     }
 
-    // Verificar que las contraseñas coincidan
+    if (new TextEncoder().encode(contrasena).length > 72) {
+      setError(
+        "La contraseña supera el máximo de 72 bytes permitido."
+      );
+      return;
+    }
+
     if (contrasena !== confirmar) {
       setError("Las contraseñas no coinciden.");
       return;
     }
 
-    // Aquí conectaremos el registro con el backend
-    setMensaje(
-      "Formulario validado. Falta conectar el registro con el servidor."
-    );
+    // Datos que espera el backend
+    const nuevoUsuario = {
+      nombre: nombre.trim(),
+      apellido: apellido.trim() || null,
+      email: email.trim().toLowerCase(),
+      contrasena: contrasena,
+    };
+
+    try {
+      setEnviando(true);
+
+      // Enviar los datos al backend
+      const respuesta = await registrarUsuario(nuevoUsuario);
+
+      // Mostrar el resultado
+      setMensaje(
+        respuesta.message ||
+        "Cuenta creada correctamente. Ya podés iniciar sesión."
+      );
+
+      // Limpiar el formulario
+      setNombre("");
+      setApellido("");
+      setEmail("");
+      setContrasena("");
+      setConfirmar("");
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEnviando(false);
+    }
   };
+
 
   return (
     <main className="auth-page">
@@ -77,7 +117,7 @@ function Register() {
                 {/* NOMBRE */}
                 <div className="auth-field">
                   <label htmlFor="register-name">
-                    Nombre completo
+                    Nombre
                   </label>
 
                   <input
@@ -90,9 +130,29 @@ function Register() {
                       setNombre(e.target.value);
                       limpiarMensajes();
                     }}
-                    autoComplete="name"
-                    maxLength={100}
+                    autoComplete="given-name"
+                    maxLength={50}
                     required
+                  />
+                </div>
+                {/* APELLIDO */}
+                <div className="auth-field">
+                  <label htmlFor="register-apellido">
+                    Apellido (opcional)
+                  </label>
+
+                  <input
+                    type="text"
+                    id="register-apellido"
+                    className="auth-input"
+                    placeholder="Ingresá tu apellido"
+                    value={apellido}
+                    onChange={(e) => {
+                      setApellido(e.target.value);
+                      limpiarMensajes();
+                    }}
+                    autoComplete="family-name"
+                    maxLength={50}
                   />
                 </div>
 
@@ -114,6 +174,7 @@ function Register() {
                     }}
                     autoComplete="email"
                     required
+                    maxLength={100}
                   />
                 </div>
 
@@ -187,8 +248,9 @@ function Register() {
                 <button
                   type="submit"
                   className="btn auth-submit"
+                  disabled={enviando}
                 >
-                  Registrarme
+                  {enviando ? "Registrando..." : "Registrarme"}
                 </button>
 
               </form>

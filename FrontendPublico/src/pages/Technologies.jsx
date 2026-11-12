@@ -11,6 +11,33 @@ const descripcionesCategorias = {
   Herramientas: "Herramientas utilizadas durante el desarrollo.",
 };
 
+
+function IconoTecnologia({ nombre, iconoUrl, iniciales }) {
+  const [imagenFallida, setImagenFallida] = useState(false);
+
+  useEffect(() => {
+    setImagenFallida(false);
+  }, [iconoUrl]);
+
+  const mostrarImagen = Boolean(iconoUrl) && !imagenFallida;
+
+  return (
+    <div className="technology-icon" aria-hidden="true">
+      {mostrarImagen ? (
+        <img
+          src={iconoUrl}
+          alt=""
+          className="technology-icon-image"
+          loading="lazy"
+          onError={() => setImagenFallida(true)}
+        />
+      ) : (
+        <span>{iniciales}</span>
+      )}
+    </div>
+  );
+}
+
 function Technologies() {
   
 const [tecnologias, setTecnologias] = useState([]);
@@ -37,21 +64,57 @@ useEffect(() => {
 }, []);
 
 // Agrupar las tecnologías que llegan desde MySQL.
-const categoriasAgrupadas = tecnologias.reduce((grupos, tecnologia) => {
-  const categoria = tecnologia.categoria || "Otras";
 
-  if (!grupos[categoria]) {
-    grupos[categoria] = [];
-  }
+const categoriasAgrupadas = tecnologias.reduce(
+  (grupos, tecnologia) => {
+    const categoria = tecnologia.categoria || "Otras";
 
-  grupos[categoria].push({
-    nombre: tecnologia.nombre,
-    iniciales: tecnologia.nombre.slice(0, 3).toUpperCase(),
-    descripcion: "",
-  });
+    // Crear la categoría si todavía no existe
+    if (!grupos[categoria]) {
+      grupos[categoria] = [];
+    }
 
-  return grupos;
-}, {});
+    // Normalizar el nombre para comparar tecnologías
+    const nombreNormalizado = tecnologia.nombre
+      .trim()
+      .toLowerCase();
+
+    // Buscar si esta tecnología ya fue agregada
+    const tecnologiaExistente = grupos[categoria].find(
+      (item) =>
+        item.nombre.trim().toLowerCase() ===
+        nombreNormalizado
+    );
+
+    if (tecnologiaExistente) {
+      // Si la primera no tenía imagen y la segunda sí,
+      // aprovechar la imagen disponible.
+      if (
+        !tecnologiaExistente.iconoUrl &&
+        tecnologia.icono_url
+      ) {
+        tecnologiaExistente.iconoUrl = tecnologia.icono_url;
+      }
+
+      return grupos;
+    }
+
+    // Agregar solamente tecnologías no repetidas
+    grupos[categoria].push({
+      id: tecnologia.id_tecnologia,
+      nombre: tecnologia.nombre,
+      iniciales: tecnologia.nombre
+        .slice(0, 3)
+        .toUpperCase(),
+      iconoUrl: tecnologia.icono_url || null,
+      descripcion: "",
+    });
+
+    return grupos;
+  },
+  {}
+);
+
 
 const categorias = Object.entries(categoriasAgrupadas).map(
   ([nombre, tecnologias]) => ({
@@ -113,13 +176,15 @@ const categorias = Object.entries(categoriasAgrupadas).map(
               {categoria.tecnologias.map((tecnologia) => (
                 <div
                   className="col-sm-6 col-lg-4"
-                  key={tecnologia.nombre}
+                  key={tecnologia.id || tecnologia.nombre}
                 >
                   <article className="technology-card">
 
-                    <div className="technology-icon">
-                      {tecnologia.iniciales}
-                    </div>
+                  <IconoTecnologia
+                    nombre={tecnologia.nombre}
+                    iconoUrl={tecnologia.iconoUrl}
+                    iniciales={tecnologia.iniciales}
+                  />
 
                     <h3>{tecnologia.nombre}</h3>
 

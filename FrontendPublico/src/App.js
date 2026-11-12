@@ -18,66 +18,76 @@ import Footer from "./components/Footer";
 import { Navigate } from "react-router-dom";
 import ProjectDetail from "./pages/ProjectDetail";
 import Demos from "./pages/Demos";
+import RegistroVisitas from "./components/RegistroVisitas";
+import { AuthProvider } from "./context/AuthContext";
+import RutaProtegida from "./components/RutaProtegida";
 
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
+      <AuthProvider>
+        <RegistroVisitas />
+        <Navbar />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
+        <Routes>
+          <Route path="/" element={<Home />} />
 
-        <Route path="/sobre-mi" element={<About />} />
+          <Route path="/sobre-mi" element={<About />} />
 
-        <Route path="/tecnologias" element={<Technologies />} />
+          <Route path="/tecnologias" element={<Technologies />} />
 
-        <Route path="/servicios" element={<Services />} />
+          <Route path="/servicios" element={<Services />} />
 
-        <Route path="/proyectos" element={<Projects />} />
+          <Route path="/proyectos" element={<Projects />} />
 
-        <Route path="/contacto" element={<Contact />} />
+          <Route path="/contacto" element={<Contact />} />
 
-        <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login />} />
 
-        <Route path="/registro" element={<Register />} />
+          <Route path="/registro" element={<Register />} />
 
-        
-        {/* Ruta real: bloqueada hasta integrar autenticación */}
-        <Route
-          path="/proyectos/:id"
-          element={<Navigate to="/login" replace />}
-        />
-
-        {/* Vista previa disponible solo en desarrollo */}
-        {process.env.NODE_ENV === "development" && (
+          
+          {/* Ruta real: bloqueada hasta integrar autenticación */}
           <Route
-            path="/vista-previa/proyecto"
-            element={<ProjectDetail />}
+            path="/proyectos/:id"
+            element={<Navigate to="/login" replace />}
           />
-        )}
-        
-        {/* Rutas reales pendientes de autenticación */}
-        <Route
-          path="/demos"
-          element={<Navigate to="/login" replace />}
-        />
 
-        <Route
-          path="/demos/:id"
-          element={<Navigate to="/login" replace />}
-        />
-
-        {/* Vista previa solo en desarrollo */}
-        {process.env.NODE_ENV === "development" && (
+          {/* Vista previa disponible solo en desarrollo */}
+          {process.env.NODE_ENV === "development" && (
+            <Route
+              path="/vista-previa/proyecto"
+              element={<ProjectDetail />}
+            />
+          )}
+          
+          {/* Rutas reales pendientes de autenticación */}
           <Route
-            path="/vista-previa/demos"
-            element={<Demos />}
+            path="/demos"
+            element={
+              <RutaProtegida>
+                <Demos />
+              </RutaProtegida>
+            }
           />
-        )}
+
+          <Route
+            path="/demos/:id"
+            element={<Navigate to="/login" replace />}
+          />
+
+          {/* Vista previa solo en desarrollo */}
+          {process.env.NODE_ENV === "development" && (
+            <Route
+              path="/vista-previa/demos"
+              element={<Demos />}
+            />
+          )}
 
 
-      </Routes>
-      <Footer />
+        </Routes>
+        <Footer />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

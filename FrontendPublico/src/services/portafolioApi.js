@@ -29,6 +29,7 @@ async function consultarAPI(ruta) {
 }
 
 // GET /api/proyectos
+
 export async function obtenerProyectos() {
   const respuesta = await consultarAPI("/api/proyectos");
 
@@ -41,6 +42,15 @@ export async function obtenerProyectos() {
     nombre: p.nombre,
     descripcion: p.descripcion || "",
     categoria: p.categoria || "Sitio web",
+
+    // Imagen almacenada en Cloudinary
+    imagenUrl: p.imagen_url || null,
+
+    // Enlaces opcionales del proyecto
+    repositorioUrl: p.repositorio_url || null,
+    demoUrl: p.demo_url || null,
+
+    // Tecnologías asociadas
     tecnologias: Array.isArray(p.tecnologias)
       ? p.tecnologias
       : [],
@@ -159,7 +169,12 @@ export async function iniciarSesion(email, contrasena) {
   return datos.usuario;
 }
 
+
 export async function obtenerSesionActual() {
+  if (!API_URL) {
+    throw new Error("Falta configurar REACT_APP_API_URL");
+  }
+
   const respuesta = await fetch(`${API_URL}/api/auth/me`, {
     method: "GET",
     credentials: "include",
@@ -171,13 +186,22 @@ export async function obtenerSesionActual() {
   const datos = await respuesta.json().catch(() => null);
 
   if (!respuesta.ok || !datos?.exito) {
-    throw new Error(
-      datos?.error || "No se pudo verificar la sesión"
+    const error = new Error(
+      datos?.error ||
+      datos?.mensaje ||
+      `Error HTTP ${respuesta.status}`
     );
+
+    // Guardamos el código HTTP para identificar
+    // si la sesión venció o falló el servidor.
+    error.status = respuesta.status;
+
+    throw error;
   }
 
   return datos.user;
 }
+
 
 export async function cerrarSesion() {
   if (!API_URL) {
@@ -197,6 +221,81 @@ export async function cerrarSesion() {
   if (!respuesta.ok || !datos.exito) {
     throw new Error(
       datos.error || "No se pudo cerrar la sesión"
+    );
+  }
+
+  return datos;
+}
+
+export async function registrarUsuario(datosUsuario) {
+  if (!API_URL) {
+    throw new Error("Falta configurar REACT_APP_API_URL");
+  }
+
+  let respuesta;
+
+  try {
+    respuesta = await fetch(`${API_URL}/api/auth/registro`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(datosUsuario),
+    });
+  } catch {
+    throw new Error(
+      "No se pudo conectar con el servidor. Verificá que el backend esté funcionando."
+    );
+  }
+
+  const datos = await respuesta.json().catch(() => null);
+
+  if (!respuesta.ok || !datos?.exito) {
+    throw new Error(
+      datos?.error ||
+      datos?.message ||
+      `Error HTTP ${respuesta.status}`
+    );
+  }
+
+  return datos;
+}
+
+export async function registrarVisita(seccion) {
+  if (!API_URL) {
+    throw new Error("Falta configurar REACT_APP_API_URL");
+  }
+
+  const idPortafolio = Number(
+    process.env.REACT_APP_PORTAFOLIO_ID
+  );
+
+  if (!Number.isInteger(idPortafolio) || idPortafolio <= 0) {
+    throw new Error("Falta configurar REACT_APP_PORTAFOLIO_ID");
+  }
+
+  const respuesta = await fetch(`${API_URL}/api/visitas`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      id_admin: idPortafolio,
+      seccion_visita: seccion,
+    }),
+  });
+
+  const datos = await respuesta.json().catch(() => null);
+
+  if (!respuesta.ok || !datos?.exito) {
+    throw new Error(
+      datos?.error ||
+      datos?.message ||
+      `Error HTTP ${respuesta.status}`
     );
   }
 

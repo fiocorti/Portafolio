@@ -1,8 +1,10 @@
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ProjectCard from "../components/ProjectCard";
 import { obtenerProyectos } from "../services/portafolioApi";
+import ProjectModal from "../components/ProjectModal";
+import { useAuth } from "../context/AuthContext";
 
 // Datos de ejemplo.
 // Más adelante vendrán desde la API del backend.
@@ -12,7 +14,6 @@ import { obtenerProyectos } from "../services/portafolioApi";
 const categorias = [
   "Todos",
   "Sitio web",
-  "Demo interactiva",
 ];
 
 function Projects() {
@@ -20,6 +21,23 @@ function Projects() {
 const [proyectos, setProyectos] = useState([]);
 const [cargando, setCargando] = useState(true);
 const [error, setError] = useState("");
+
+const [proyectoSeleccionado, setProyectoSeleccionado] =
+  useState(null);
+
+const { usuario, cargandoSesion } = useAuth();
+
+const cerrarModal = useCallback(() => {
+  setProyectoSeleccionado(null);
+}, []);
+
+// Si se cierra la sesión, cerrar también el modal.
+useEffect(() => {
+  if (!cargandoSesion && !usuario) {
+    cerrarModal();
+  }
+}, [usuario, cargandoSesion, cerrarModal]);
+
 
 useEffect(() => {
   let activo = true;
@@ -101,36 +119,42 @@ useEffect(() => {
             y demostraciones interactivas.
           </p>
 
-          {/* Filtros */}
-          <div
-            className="projects-filters"
-            role="group"
-            aria-label="Filtrar proyectos"
-          >
-            {categorias.map((categoria) => (
-              <button
-                key={categoria}
-                type="button"
-                className={`projects-filter-btn ${
-                  filtroActivo === categoria
-                    ? "active"
-                    : ""
-                }`}
-                aria-pressed={
-                  filtroActivo === categoria
-                }
-                onClick={() =>
-                  setFiltroActivo(categoria)
-                }
-              >
-                {categoria === "Todos"
-                  ? "Todos"
-                  : categoria === "Sitio web"
-                  ? "Sitios web"
-                  : "Demos"}
-              </button>
-            ))}
+
+          {/* Filtros y acceso a demos */}
+          <div className="projects-filters">
+
+            <div
+              className="projects-filter-group"
+              role="group"
+              aria-label="Filtrar proyectos"
+            >
+              {categorias.map((categoria) => (
+                <button
+                  key={categoria}
+                  type="button"
+                  className={`projects-filter-btn ${
+                    filtroActivo === categoria ? "active" : ""
+                  }`}
+                  aria-pressed={filtroActivo === categoria}
+                  onClick={() => setFiltroActivo(categoria)}
+                >
+                  {categoria === "Todos"
+                    ? "Todos"
+                    : "Sitios web"}
+                </button>
+              ))}
+            </div>
+
+            {/* Acceso a las demos interactivas */}
+            <Link
+              to="/demos"
+              className="projects-filter-btn projects-demos-link"
+            >
+              Ver demos interactivas
+            </Link>
+
           </div>
+
           {/* Estados de la petición */}
           {cargando && (
             <p>Cargando proyectos...</p>
@@ -150,10 +174,11 @@ useEffect(() => {
                   className="col-md-6"
                   key={proyecto.id}
                 >
-                  <ProjectCard
-                    proyecto={proyecto}
-                    numero={proyecto.id}
-                  />
+                <ProjectCard
+                  proyecto={proyecto}
+                  numero={proyecto.id}
+                  onVerDetalles={setProyectoSeleccionado}
+                />
                 </div>
               )
             )}
@@ -216,6 +241,15 @@ useEffect(() => {
 
         </div>
       </section>
+
+      {/* MODAL DE DETALLES */}
+      {usuario && proyectoSeleccionado && (
+        <ProjectModal
+          key={proyectoSeleccionado.id}
+          proyecto={proyectoSeleccionado}
+          onClose={cerrarModal}
+        />
+      )}
 
     </main>
   );

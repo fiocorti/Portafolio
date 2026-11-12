@@ -1,12 +1,40 @@
 
+
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [cerrando, setCerrando] = useState(false);
+  const [error, setError] = useState("");
+
+  const {
+    usuario,
+    cargandoSesion,
+    errorSesion,
+    salir,
+  } = useAuth();
 
   const cerrarMenu = () => {
     setMenuAbierto(false);
+  };
+
+  const manejarCerrarSesion = async () => {
+    if (cerrando) return;
+
+    try {
+      setCerrando(true);
+      setError("");
+
+      await salir();
+
+      cerrarMenu();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCerrando(false);
+    }
   };
 
   const enlaces = [
@@ -22,7 +50,6 @@ function Navbar() {
     <nav className="navbar navbar-expand-lg navbar-dark navbar-publica sticky-top">
       <div className="container">
 
-        {/* Nombre provisional del portfolio */}
         <NavLink
           className="navbar-brand fw-bold"
           to="/"
@@ -31,9 +58,6 @@ function Navbar() {
           Portfolio<span className="marca-punto">.</span>
         </NavLink>
 
-
-
-        {/* Botón del menú en celulares */}
         <button
           className="navbar-toggler"
           type="button"
@@ -45,9 +69,10 @@ function Navbar() {
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        {/* Enlaces de navegación */}
         <div
-          className={`collapse navbar-collapse ${menuAbierto ? "show" : ""}`}
+          className={`collapse navbar-collapse ${
+            menuAbierto ? "show" : ""
+          }`}
           id="menuPrincipal"
         >
           <ul className="navbar-nav ms-auto align-items-lg-center gap-lg-2">
@@ -67,26 +92,96 @@ function Navbar() {
               </li>
             ))}
 
-            <li className="nav-item">
-              <NavLink
-                to="/login"
-                className="nav-link"
-                onClick={cerrarMenu}
-              >
-                Iniciar sesión
-              </NavLink>
-            </li>
+            {usuario && (
+              <li className="nav-item">
+                <NavLink
+                  to="/demos"
+                  className={({ isActive }) =>
+                    `nav-link ${isActive ? "activo" : ""}`
+                  }
+                  onClick={cerrarMenu}
+                >
+                  Demos
+                </NavLink>
+              </li>
+            )}
 
-            <li className="nav-item">
-              <NavLink
-                to="/registro"
-                className="btn btn-registro ms-lg-2"
-                onClick={cerrarMenu}
-              >
-                Registrarse
-              </NavLink>
-            </li>
 
+            {/* Mientras se comprueba la sesión */}
+            {cargandoSesion ? (
+              <li className="nav-item">
+                <span className="nav-link">
+                  Verificando sesión...
+                </span>
+              </li>
+            ) : usuario ? (
+              <>
+                {/* Usuario autenticado */}
+                <li className="nav-item">
+                  <span className="nav-link">
+                    Hola, {usuario.nombre}
+                  </span>
+                </li>
+
+                <li className="nav-item">
+                  <button
+                    type="button"
+                    className="btn btn-registro ms-lg-2"
+                    disabled={cerrando}
+                    onClick={manejarCerrarSesion}
+                  >
+                    {cerrando
+                      ? "Cerrando..."
+                      : "Cerrar sesión"}
+                  </button>
+                </li>
+              </>
+            ) : (
+              <>
+                {/* Visitante sin sesión */}
+                <li className="nav-item">
+                  <NavLink
+                    to="/login"
+                    className="nav-link"
+                    onClick={cerrarMenu}
+                  >
+                    Iniciar sesión
+                  </NavLink>
+                </li>
+
+                <li className="nav-item">
+                  <NavLink
+                    to="/registro"
+                    className="btn btn-registro ms-lg-2"
+                    onClick={cerrarMenu}
+                  >
+                    Registrarse
+                  </NavLink>
+                </li>
+              </>
+            )}
+
+            {error && (
+              <li className="nav-item">
+                <span
+                  className="nav-link text-warning"
+                  role="alert"
+                >
+                  {error}
+                </span>
+              </li>
+            )}
+
+            {errorSesion && (
+              <li className="nav-item">
+                <span
+                  className="nav-link text-warning"
+                  role="status"
+                >
+                  {errorSesion}
+                </span>
+              </li>
+            )}
           </ul>
         </div>
       </div>

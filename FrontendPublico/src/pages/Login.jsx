@@ -1,64 +1,77 @@
 
+
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import {
-  iniciarSesion,
-  obtenerSesionActual,
-} from "../services/portafolioApi";
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [contrasena, setContrasena] = useState("");
-  const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
-  const [enviando, setEnviando] = useState(false);  
+  const [enviando, setEnviando] = useState(false);
 
-  
-const manejarSubmit = async (event) => {
-  event.preventDefault();
+  // Obtener el estado global de autenticación
+  const {
+    usuario,
+    cargandoSesion,
+    entrar,
+  } = useAuth();
 
-  if (enviando) return;
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  setMensaje("");
-  setError("");
+  // Recuperar la página que el visitante quería abrir
+  const desde = location.state?.desde;
 
-  if (!email.trim() || !contrasena) {
-    setError("Completá el correo y la contraseña.");
-    return;
-  }
+  // Solo permitir rutas internas del portafolio
+  const destino =
+    typeof desde === "string" &&
+    desde.startsWith("/") &&
+    !desde.startsWith("//")
+      ? desde
+      : "/";
 
-  try {
-    setEnviando(true);
 
-    // Enviar credenciales al backend
-    await iniciarSesion(email.trim(), contrasena);
+  const manejarSubmit = async (event) => {
+    event.preventDefault();
 
-    // Comprobar que se creó la sesión
-    const usuario = await obtenerSesionActual();
+    if (enviando) return;
+
+    setError("");
+
+    if (!email.trim() || !contrasena) {
+      setError("Completá el correo y la contraseña.");
+      return;
+    }
+
+    try {
+      setEnviando(true);
+
+      // Iniciar sesión y actualizar el estado global
+    await entrar(email.trim(), contrasena);
 
     setContrasena("");
 
-    setMensaje(
-      `Sesión iniciada correctamente. Bienvenido/a, ${usuario.nombre}.`
-    );
+    // Volver a la página solicitada
+    navigate(destino, { replace: true });
 
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setEnviando(false);
-  }
-};
-
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEnviando(false);
+    }
+  };
 
   return (
     <main className="auth-page">
       <div className="container">
-
         <div className="row justify-content-center">
           <div className="col-12 col-md-9 col-lg-6 col-xl-5">
 
             <div className="auth-card">
-
               <div className="auth-header">
                 <p className="auth-eyebrow">
                   BIENVENIDO NUEVAMENTE
@@ -74,87 +87,101 @@ const manejarSubmit = async (event) => {
                 </p>
               </div>
 
-              <form onSubmit={manejarSubmit}>
-
-                {/* CORREO */}
-                <div className="auth-field">
-                  <label htmlFor="login-email">
-                    Correo electrónico
-                  </label>
-
-                  <input
-                    type="email"
-                    id="login-email"
-                    className="auth-input"
-                    placeholder="correo@ejemplo.com"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setMensaje("");
-                    }}
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-
-                {/* CONTRASEÑA */}
-                <div className="auth-field">
-                  <label htmlFor="login-password">
-                    Contraseña
-                  </label>
-
-                  <input
-                    type="password"
-                    id="login-password"
-                    className="auth-input"
-                    placeholder="Ingresá tu contraseña"
-                    value={contrasena}
-                    onChange={(e) => {
-                      setContrasena(e.target.value);
-                      setMensaje("");
-                    }}
-                    autoComplete="current-password"
-                    required
-                  />
-                </div>
-
-                {/* MENSAJE TEMPORAL */}
-                {mensaje && (
-                  <p
-                    className="auth-alert auth-alert-info"
-                    role="status"
-                  >
-                    {mensaje}
-                  </p>
-                )}
-                {error && (
-                  <p
-                    className="auth-alert auth-alert-error"
-                    role="alert"
-                  >
-                    {error}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  className="btn auth-submit"
-                  disabled={enviando}
+              {cargandoSesion ? (
+                <p
+                  className="auth-alert auth-alert-info"
+                  role="status"
                 >
-                  {enviando ? "Iniciando sesión..." : "Ingresar"}
-                </button>
-
-              </form>
-
-              <div className="auth-footer">
-                <p>
-                  ¿Todavía no tenés una cuenta?{" "}
-                  <Link to="/registro">
-                    Registrate
-                  </Link>
+                  Verificando sesión...
                 </p>
-              </div>
+              ) : usuario ? (
+                <p
+                  className="auth-alert auth-alert-info"
+                  role="status"
+                >
+                  Sesión iniciada correctamente.
+                  Bienvenido/a, {usuario.nombre}.
+                  Podés cerrar sesión desde el menú
+                  de navegación.
+                </p>
+              ) : (
+                <>
+                  <form onSubmit={manejarSubmit}>
 
+                    {/* CORREO */}
+                    <div className="auth-field">
+                      <label htmlFor="login-email">
+                        Correo electrónico
+                      </label>
+
+                      <input
+                        type="email"
+                        id="login-email"
+                        className="auth-input"
+                        placeholder="correo@ejemplo.com"
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          setError("");
+                        }}
+                        autoComplete="email"
+                        required
+                      />
+                    </div>
+
+                    {/* CONTRASEÑA */}
+                    <div className="auth-field">
+                      <label htmlFor="login-password">
+                        Contraseña
+                      </label>
+
+                      <input
+                        type="password"
+                        id="login-password"
+                        className="auth-input"
+                        placeholder="Ingresá tu contraseña"
+                        value={contrasena}
+                        onChange={(e) => {
+                          setContrasena(e.target.value);
+                          setError("");
+                        }}
+                        autoComplete="current-password"
+                        required
+                      />
+                    </div>
+
+                    {/* ERRORES */}
+                    {error && (
+                      <p
+                        className="auth-alert auth-alert-error"
+                        role="alert"
+                      >
+                        {error}
+                      </p>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="btn auth-submit"
+                      disabled={enviando}
+                    >
+                      {enviando
+                        ? "Iniciando sesión..."
+                        : "Ingresar"}
+                    </button>
+
+                  </form>
+
+                  <div className="auth-footer">
+                    <p>
+                      ¿Todavía no tenés una cuenta?{" "}
+                      <Link to="/registro">
+                        Registrate
+                      </Link>
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             <Link
