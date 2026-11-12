@@ -78,7 +78,7 @@ app.use('/api/tecnologias', tecnologiasRoutes);
 app.use('/api/experiencias', experienciasRoutes);
 app.use('/api/contacto', contactoRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/auth', authRoutes); // <-- Registro de la ruta de tu compañero
+app.use('/api/auth', authRoutes);
 
 
 // 🚀 6. INICIO DEL SERVIDOR

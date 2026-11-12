@@ -3,8 +3,9 @@ const router = express.Router();
 
 const { 
     obtenerTecnologias, 
-    obtenerTecnologiasEnUso, 
+    obtenerTecnologiasEnUso,
     crearTecnologia,
+    editarTecnologia,
     eliminarTecnologia 
 } = require('../controllers/tecnologias.controller');
 
@@ -14,6 +15,9 @@ router.get('/en-uso', obtenerTecnologiasEnUso);
 
 // POST: /api/tecnologias
 router.post('/', crearTecnologia);
+
+// PUT: /api/tecnologias/:id
+router.put('/:id', editarTecnologia);
 
 // DELETE: /api/tecnologias/:id
 router.delete('/:id', eliminarTecnologia);
