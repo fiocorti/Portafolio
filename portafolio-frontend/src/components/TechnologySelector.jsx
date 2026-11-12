@@ -2,6 +2,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import tecnologiasService from '../services/tecnologiasService';
 
+// Normaliza nombres para detectar duplicados.
+const normalizarNombre = nombre =>
+  String(nombre || '').trim().toLowerCase();
+
 export default function TechnologySelector({ value = [], onChange }) {
   const [catalogo, setCatalogo] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,10 +20,23 @@ export default function TechnologySelector({ value = [], onChange }) {
       .then(data => {
         if (activo) {
           const tecnologias = Array.isArray(data) ? data : [];
-          setCatalogo(tecnologias);
 
-          // Abrir inicialmente la primera categoría.
-          const primeraCategoria = tecnologias[0]?.categoria || 'Sin categoría';
+          // Eliminar duplicados por nombre.
+          const tecnologiasUnicas = Array.from(
+            new Map(
+              tecnologias
+                .filter(tecnologia => normalizarNombre(tecnologia.nombre))
+                .map(tecnologia => [
+                  normalizarNombre(tecnologia.nombre),
+                  tecnologia
+                ])
+            ).values()
+          );
+
+          setCatalogo(tecnologiasUnicas);
+
+          const primeraCategoria =
+            tecnologiasUnicas[0]?.categoria || 'Sin categoría';
 
           setCategoriasAbiertas({
             [primeraCategoria]: true
@@ -42,15 +59,34 @@ export default function TechnologySelector({ value = [], onChange }) {
 
   const actuales = Array.isArray(value) ? value : [];
 
+  // Eliminar duplicados también de las tecnologías seleccionadas.
+  const actualesUnicas = useMemo(() => {
+    const unicas = new Map();
+
+    actuales.forEach(item => {
+      const nombre = typeof item === 'string'
+        ? item
+        : item.nombre;
+
+      const clave = normalizarNombre(nombre);
+
+      if (clave && !unicas.has(clave)) {
+        unicas.set(clave, item);
+      }
+    });
+
+    return Array.from(unicas.values());
+  }, [actuales]);
+
   const seleccionadas = useMemo(() => {
     return new Set(
-      actuales.map(item =>
-        typeof item === 'string'
-          ? item.toLowerCase()
-          : String(item.nombre || '').toLowerCase()
+      actualesUnicas.map(item =>
+        normalizarNombre(
+          typeof item === 'string' ? item : item.nombre
+        )
       )
     );
-  }, [actuales]);
+  }, [actualesUnicas]);
 
   const categorias = useMemo(() => {
     const resultado = {};
@@ -70,13 +106,11 @@ export default function TechnologySelector({ value = [], onChange }) {
 
   const categoriasFiltradas = useMemo(() => {
     const resultado = {};
-    const termino = busqueda.trim().toLowerCase();
+    const termino = normalizarNombre(busqueda);
 
     Object.entries(categorias).forEach(([categoria, tecnologias]) => {
       const coincidencias = tecnologias.filter(tecnologia =>
-        String(tecnologia.nombre || '')
-          .toLowerCase()
-          .includes(termino)
+        normalizarNombre(tecnologia.nombre).includes(termino)
       );
 
       if (coincidencias.length > 0) {
@@ -88,32 +122,33 @@ export default function TechnologySelector({ value = [], onChange }) {
   }, [categorias, busqueda]);
 
   const cambiarSeleccion = (tecnologia, checked) => {
-    const nombre = String(tecnologia.nombre || '').toLowerCase();
+    const nombre = normalizarNombre(tecnologia.nombre);
 
     let siguientes;
 
     if (checked) {
       siguientes = [
-        ...actuales.filter(item => {
+        ...actualesUnicas.filter(item => {
           const itemNombre = typeof item === 'string'
-            ? item.toLowerCase()
-            : String(item.nombre || '').toLowerCase();
+            ? item
+            : item.nombre;
 
-          return itemNombre !== nombre;
+          return normalizarNombre(itemNombre) !== nombre;
         }),
         {
-          id_tecnologia: tecnologia.id_tecnologia || tecnologia.id,
+          id_tecnologia:
+            tecnologia.id_tecnologia || tecnologia.id,
           nombre: tecnologia.nombre,
           categoria: tecnologia.categoria || ''
         }
       ];
     } else {
-      siguientes = actuales.filter(item => {
+      siguientes = actualesUnicas.filter(item => {
         const itemNombre = typeof item === 'string'
-          ? item.toLowerCase()
-          : String(item.nombre || '').toLowerCase();
+          ? item
+          : item.nombre;
 
-        return itemNombre !== nombre;
+        return normalizarNombre(itemNombre) !== nombre;
       });
     }
 
@@ -121,12 +156,12 @@ export default function TechnologySelector({ value = [], onChange }) {
   };
 
   const quitarSeleccion = nombre => {
-    const siguientes = actuales.filter(item => {
+    const siguientes = actualesUnicas.filter(item => {
       const itemNombre = typeof item === 'string'
         ? item
         : item.nombre;
 
-      return String(itemNombre || '').toLowerCase() !== nombre.toLowerCase();
+      return normalizarNombre(itemNombre) !== normalizarNombre(nombre);
     });
 
     onChange('tecnologias', siguientes);
@@ -191,9 +226,9 @@ export default function TechnologySelector({ value = [], onChange }) {
           <span>{seleccionadas.size}</span>
         </div>
 
-        {actuales.length > 0 ? (
+        {actualesUnicas.length > 0 ? (
           <div className="technology-tags">
-            {actuales.map(item => {
+            {actualesUnicas.map(item => {
               const nombre = typeof item === 'string'
                 ? item
                 : item.nombre;
@@ -201,7 +236,7 @@ export default function TechnologySelector({ value = [], onChange }) {
               return (
                 <span
                   className="technology-tag"
-                  key={String(nombre).toLowerCase()}
+                  key={normalizarNombre(nombre)}
                 >
                   {nombre}
 
@@ -258,7 +293,7 @@ export default function TechnologySelector({ value = [], onChange }) {
               const cantidadSeleccionada = tecnologias.filter(
                 tecnologia =>
                   seleccionadas.has(
-                    String(tecnologia.nombre || '').toLowerCase()
+                    normalizarNombre(tecnologia.nombre)
                   )
               ).length;
 
@@ -293,9 +328,9 @@ export default function TechnologySelector({ value = [], onChange }) {
                   {abierta && (
                     <div className="technology-options-grid">
                       {tecnologias.map(tecnologia => {
-                        const nombre = String(
-                          tecnologia.nombre || ''
-                        ).toLowerCase();
+                        const nombre = normalizarNombre(
+                          tecnologia.nombre
+                        );
 
                         const checked = seleccionadas.has(nombre);
 
@@ -304,7 +339,7 @@ export default function TechnologySelector({ value = [], onChange }) {
                             key={
                               tecnologia.id ||
                               tecnologia.id_tecnologia ||
-                              tecnologia.nombre
+                              nombre
                             }
                             className={`technology-option ${
                               checked ? 'selected' : ''
