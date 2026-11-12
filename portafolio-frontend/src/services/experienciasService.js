@@ -1,30 +1,53 @@
+import { request } from './api';
 
-import { createEntityService } from './entityFactory';
-
-const api = createEntityService('/api/experiencias');
-
-function obtenerMensaje(error) {
-  return error?.details?.mensaje ||
-    error?.message ||
-    'No se pudo completar la operación.';
+function adaptarExperiencia(experiencia) {
+  return {
+    ...experiencia,
+    id: experiencia.id_experiencia ?? experiencia.id,
+    titulo: experiencia.titulo || '',
+    categoria: experiencia.categoria || '',
+    descripcion: experiencia.descripcion || '',
+    fecha_inicio: experiencia.fecha_inicio || null,
+    fecha_fin: experiencia.fecha_fin || null,
+    estado: experiencia.estado || 'Publicado'
+  };
 }
 
 const experienciasService = {
   async list() {
-    const experiencias = await api.list();
+    const respuesta = await request('/api/experiencias');
 
-    return (Array.isArray(experiencias) ? experiencias : []).map(experiencia => ({
-      ...experiencia,
-      id: experiencia.id_experiencia
-    }));
+    const experiencias = Array.isArray(respuesta)
+      ? respuesta
+      : respuesta?.datos || [];
+
+    return experiencias.map(adaptarExperiencia);
   },
 
   async create(payload) {
-    try {
-      return await api.create(payload);
-    } catch (error) {
-      throw new Error(obtenerMensaje(error));
-    }
+    return request('/api/experiencias', {
+      method: 'POST',
+      body: {
+        titulo: payload.titulo || '',
+        categoria: payload.categoria || '',
+        descripcion: payload.descripcion || '',
+        fecha_inicio: payload.fecha_inicio || null,
+        fecha_fin: payload.fecha_fin || null,
+        estado: payload.estado || 'Publicado'
+      }
+    });
+  },
+
+  async update() {
+    throw new Error(
+      'El backend actual no dispone de una ruta para editar experiencias.'
+    );
+  },
+
+  async remove() {
+    throw new Error(
+      'El backend actual no dispone de una ruta para eliminar experiencias.'
+    );
   }
 };
 

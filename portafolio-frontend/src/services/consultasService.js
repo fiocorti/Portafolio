@@ -9,71 +9,58 @@ function normalizarEstado(estado) {
   return estado || 'Pendiente';
 }
 
-function adaptarConsulta(consulta, mensajes = []) {
-  const listaMensajes = Array.isArray(mensajes) ? mensajes : [];
-
-  const mensajeOriginal = listaMensajes.find(
-    mensaje => !mensaje.es_respuesta_admin
-  );
-
-  const respuestas = listaMensajes.filter(
-    mensaje => Boolean(mensaje.es_respuesta_admin)
-  );
-
-  const ultimaRespuesta = respuestas[respuestas.length - 1];
-
+function adaptarConsulta(consulta) {
   return {
     ...consulta,
     id: consulta.id_consulta ?? consulta.id,
-    nombre: consulta.nombre_remitente ?? consulta.nombre ?? '',
-    email: consulta.email_remitente ?? consulta.email ?? '',
-    asunto: consulta.motivo ?? consulta.asunto ?? '',
-    fecha: consulta.fecha_inicio ?? consulta.fecha ?? null,
+    nombre: consulta.nombre_remitente || '',
+    email: consulta.email_remitente || '',
+    asunto: consulta.motivo || '',
+    fecha: consulta.fecha_inicio || null,
+    servicio: consulta.nombre_servicio || '',
     estado: normalizarEstado(consulta.estado),
-    mensaje:
-      mensajeOriginal?.contenido ??
-      consulta.contenido ??
-      consulta.mensaje ??
-      '',
-    respuesta: ultimaRespuesta?.contenido ?? '',
-    mensajes: listaMensajes
+    mensaje: consulta.contenido || consulta.mensaje || '',
+    respuesta: '',
+    mensajes: []
   };
 }
 
 const consultasService = {
-  // GET /api/contacto
   async list() {
-    const data = await request('/api/contacto');
-    const consultas = data?.consultas || [];
+    const respuesta = await request('/api/contacto');
+    const consultas = respuesta?.consultas || [];
 
     return Array.isArray(consultas)
-      ? consultas.map(consulta => adaptarConsulta(consulta))
+      ? consultas.map(adaptarConsulta)
       : [];
   },
 
-  // GET /api/contacto/:id
   async get(id) {
-    const data = await request(
-      `/api/contacto/${encodeURIComponent(id)}`
+    const consultas = await this.list();
+
+    const consulta = consultas.find(
+      item => String(item.id) === String(id)
     );
 
-    if (!data?.consulta) {
-      throw new Error('No se encontraron los datos de la consulta.');
+    if (!consulta) {
+      throw new Error('No se encontró la consulta en el listado.');
     }
 
-    return adaptarConsulta(
-      data.consulta,
-      data.mensajes || []
-    );
+    return consulta;
   },
 
-  // POST /api/contacto/responder
   async reply(id, respuesta) {
+    const contenido = String(respuesta || '').trim();
+
+    if (!contenido) {
+      throw new Error('Escribí una respuesta antes de enviarla.');
+    }
+
     return request('/api/contacto/responder', {
       method: 'POST',
       body: {
         id_consulta: id,
-        contenido_respuesta: respuesta
+        contenido_respuesta: contenido
       }
     });
   }

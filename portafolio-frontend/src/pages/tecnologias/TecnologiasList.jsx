@@ -26,8 +26,6 @@ import EmptyState from '../../components/EmptyState';
 import tecnologiasService from '../../services/tecnologiasService';
 import proyectosService from '../../services/proyectosService';
 
-// Normaliza nombres para comparar tecnologías sin importar
-// mayúsculas, espacios o si vienen como objetos.
 function normalizarNombre(valor) {
   return String(valor || '').trim().toLocaleLowerCase();
 }
@@ -51,7 +49,10 @@ function obtenerTecnologiasDelProyecto(proyecto) {
   }
 
   if (typeof tecnologias === 'string') {
-    return tecnologias.split(',').map(nombre => nombre.trim()).filter(Boolean);
+    return tecnologias
+      .split(',')
+      .map(nombre => nombre.trim())
+      .filter(Boolean);
   }
 
   return [];
@@ -118,8 +119,6 @@ export default function TecnologiasList() {
     proyectos.forEach(proyecto => {
       const nombres = obtenerTecnologiasDelProyecto(proyecto);
 
-      // Evita contar dos veces la misma tecnología
-      // dentro de un mismo proyecto.
       const nombresUnicos = new Set(
         nombres.map(normalizarNombre).filter(Boolean)
       );
@@ -199,6 +198,7 @@ export default function TecnologiasList() {
     }));
   };
 
+  // Eliminar utiliza el endpoint DELETE disponible.
   const eliminar = async () => {
     if (!deleteItem) return;
 
@@ -324,6 +324,7 @@ export default function TecnologiasList() {
           <div className="technology-categories">
             {categorias.map((categoria, index) => {
               const abierto = Boolean(expanded[categoria.nombre]);
+
               const cantidadEnUso = categoria.items.filter(
                 item => item.enUso
               ).length;

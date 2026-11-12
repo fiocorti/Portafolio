@@ -1,2 +1,9 @@
 import { request } from './api';
-export default { async get(params = {}) { const query = new URLSearchParams(params).toString(); return request(`/api/admin/estadisticas${query ? `?${query}` : ''}`); } };
+
+const estadisticasService = {
+  async get() {
+    return request('/api/admin/estadisticas');
+  }
+};
+
+export default estadisticasService;

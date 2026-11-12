@@ -1,9 +1,6 @@
-
 import { mockRequest } from '../mocks/mockData';
 
-// Las solicitudes se envían al backend en el puerto 3001.
-const API_URL = 'http://localhost:3001';
-
+const API_URL = (process.env.REACT_APP_API_URL || '').replace(/\/$/, '');
 const USE_MOCKS = process.env.REACT_APP_USE_MOCKS === 'true';
 
 export class ApiError extends Error {
@@ -15,36 +12,50 @@ export class ApiError extends Error {
   }
 }
 
+function esFormData(value) {
+  return typeof FormData !== 'undefined' && value instanceof FormData;
+}
+
+async function leerRespuesta(response) {
+  if (response.status === 204) return null;
+
+  const contentType = response.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    return response.json().catch(() => ({}));
+  }
+
+  const texto = await response.text().catch(() => '');
+  return texto ? { mensaje: texto } : {};
+}
+
 export async function request(path, options = {}) {
-  // Si está activado el modo de pruebas, utiliza los datos simulados.
   if (USE_MOCKS) {
     return mockRequest(path, options);
   }
 
+  const url = `${API_URL}${path.startsWith('/') ? path : `/${path}`}`;
+
   const headers = {
     Accept: 'application/json',
-    ...(options.body && !(options.body instanceof FormData)
-      ? { 'Content-Type': 'application/json' }
-      : {}),
     ...options.headers
   };
 
   let body = options.body;
 
-  // Convierte los objetos a JSON, excepto FormData.
-  if (
-    body &&
-    typeof body === 'object' &&
-    !(body instanceof FormData) &&
-    typeof body !== 'string'
-  ) {
-    body = JSON.stringify(body);
+  if (body !== undefined && body !== null && !esFormData(body)) {
+    if (typeof body === 'object' && typeof body !== 'string') {
+      headers['Content-Type'] = 'application/json';
+      body = JSON.stringify(body);
+    } else if (typeof body === 'string' && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
   }
 
   let response;
 
   try {
-    response = await fetch(`${API_URL}${path}`, {
+    response = await fetch(url, {
       ...options,
       headers,
       body,
@@ -52,19 +63,14 @@ export async function request(path, options = {}) {
     });
   } catch (error) {
     throw new ApiError(
-      'No se pudo conectar con el servidor. Verificá la API y la conexión.',
+      'No se pudo conectar con el backend. Comprobá que el servidor esté iniciado en el puerto 3001.',
       0,
       error
     );
   }
 
-  const contentType = response.headers.get('content-type') || '';
+  const data = await leerRespuesta(response);
 
-  const data = contentType.includes('application/json')
-    ? await response.json().catch(() => ({}))
-    : await response.text();
-
-  // Reconoce los distintos formatos de error del backend.
   if (!response.ok) {
     const mensaje =
       data?.mensaje ||
@@ -72,11 +78,7 @@ export async function request(path, options = {}) {
       data?.error ||
       `Error HTTP ${response.status}`;
 
-    throw new ApiError(
-      mensaje,
-      response.status,
-      data
-    );
+    throw new ApiError(mensaje, response.status, data);
   }
 
   return data;
@@ -86,5 +88,5 @@ export const apiConfig = {
   get mocksEnabled() {
     return USE_MOCKS;
   },
-  baseUrl: API_URL
+  baseUrl: API_URL || '/ (proxy de React)'
 };

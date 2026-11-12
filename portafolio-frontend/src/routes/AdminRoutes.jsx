@@ -1,52 +1,52 @@
-
 import React from 'react';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import {
+  Redirect,
+  Route,
+  Switch
+} from 'react-router-dom';
 
 import AdminLayout from '../layouts/AdminLayout';
+import useAuth from '../hooks/useAuth';
+import LoadingState from '../components/LoadingState';
+import Login from '../pages/Login';
 
-// PROYECTOS
+// Proyectos
 import ProyectosList from '../pages/proyectos/ProyectosList';
 import ProyectoCreate from '../pages/proyectos/ProyectoCreate';
 import ProyectoEdit from '../pages/proyectos/ProyectoEdit';
 import ProyectoDetail from '../pages/proyectos/ProyectoDetail';
 
-// DEMOS
+// Demos
 import DemosList from '../pages/demos/DemosList';
-import DemoCreate from '../pages/demos/DemoCreate';
-import DemoEdit from '../pages/demos/DemoEdit';
 import DemoDetail from '../pages/demos/DemoDetail';
 
-// SERVICIOS
+// Servicios
 import ServiciosList from '../pages/servicios/ServiciosList';
 import ServicioCreate from '../pages/servicios/ServicioCreate';
 import ServicioEdit from '../pages/servicios/ServicioEdit';
 import ServicioDetail from '../pages/servicios/ServicioDetail';
 
-// USUARIOS
+// Usuarios
 import UsuariosList from '../pages/usuarios/UsuariosList';
 import UsuarioDetail from '../pages/usuarios/UsuarioDetail';
 import UsuarioEdit from '../pages/usuarios/UsuarioEdit';
 
-// CONSULTAS
+// Consultas
 import ConsultasList from '../pages/consultas/ConsultasList';
 import ConsultaDetail from '../pages/consultas/ConsultaDetail';
 import ResponderConsulta from '../pages/consultas/ResponderConsulta';
 
-// TECNOLOGÍAS
+// Tecnologías
 import TecnologiasList from '../pages/tecnologias/TecnologiasList';
 import TecnologiaCreate from '../pages/tecnologias/TecnologiaCreate';
-import TecnologiaEdit from '../pages/tecnologias/TecnologiaEdit';
 
-// EXPERIENCIAS
+// Experiencias
 import ExperienciasList from '../pages/experiencias/ExperienciasList';
 import ExperienciaCreate from '../pages/experiencias/ExperienciaCreate';
 
-// GENERAL
+// General
 import Estadisticas from '../pages/Estadisticas';
 import Configuracion from '../pages/Configuracion';
-
-import useAuth from '../hooks/useAuth';
-import LoadingState from '../components/LoadingState';
 
 function AdminAccess({
   children,
@@ -59,13 +59,13 @@ function AdminAccess({
   }
 
   if (!user) {
-    return <Redirect to={process.env.REACT_APP_LOGIN_URL || '/login'} />;
+    return <Redirect to="/login" />;
   }
 
   const role = String(user.rol || user.role || '').toLowerCase();
 
   if (!allowed.includes(role)) {
-    return <Redirect to="/admin/consultas" />;
+    return <Redirect to="/login" />;
   }
 
   return children;
@@ -82,145 +82,180 @@ function AdminOnly({ children }) {
 export default function AdminRoutes() {
   return (
     <Switch>
+      <Route exact path="/login" component={Login} />
+
       <Route path="/admin">
         <AdminAccess>
           <AdminLayout>
             <Switch>
-
-              {/* INICIO / ESTADÍSTICAS */}
+              {/* Inicio */}
               <Route
                 exact
                 path="/admin"
                 component={Estadisticas}
               />
 
-              {/* PROYECTOS */}
+              {/* Proyectos */}
               <Route
                 exact
                 path="/admin/proyectos"
-                render={() => <AdminOnly><ProyectosList /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><ProyectosList /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/proyectos/nuevo"
-                render={() => <AdminOnly><ProyectoCreate /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><ProyectoCreate /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/proyectos/:id/editar"
-                render={() => <AdminOnly><ProyectoEdit /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><ProyectoEdit /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/proyectos/:id"
-                render={() => <AdminOnly><ProyectoDetail /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><ProyectoDetail /></AdminOnly>
+                )}
               />
 
-              {/* DEMOS */}
+              {/* Demos: se consultan desde los proyectos */}
               <Route
                 exact
                 path="/admin/demos"
-                render={() => <AdminOnly><DemosList /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><DemosList /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/demos/nueva"
-                render={() => <AdminOnly><DemoCreate /></AdminOnly>}
+                render={() => <Redirect to="/admin/proyectos" />}
               />
 
               <Route
                 exact
                 path="/admin/demos/:id/editar"
-                render={() => <AdminOnly><DemoEdit /></AdminOnly>}
+                render={() => <Redirect to="/admin/proyectos" />}
               />
 
               <Route
                 exact
                 path="/admin/demos/:id"
-                render={() => <AdminOnly><DemoDetail /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><DemoDetail /></AdminOnly>
+                )}
               />
 
-              {/* TECNOLOGÍAS */}
+              {/* Tecnologías */}
               <Route
                 exact
                 path="/admin/tecnologias"
-                render={() => <AdminOnly><TecnologiasList /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><TecnologiasList /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/tecnologias/nuevo"
-                render={() => <AdminOnly><TecnologiaCreate /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><TecnologiaCreate /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/tecnologias/:id/editar"
-                render={() => <AdminOnly><TecnologiaEdit /></AdminOnly>}
+                render={() => <Redirect to="/admin/tecnologias" />}
               />
 
-              {/* EXPERIENCIAS */}
+              {/* Experiencias */}
               <Route
                 exact
                 path="/admin/experiencias"
-                render={() => <AdminOnly><ExperienciasList /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><ExperienciasList /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/experiencias/nuevo"
-                render={() => <AdminOnly><ExperienciaCreate /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><ExperienciaCreate /></AdminOnly>
+                )}
               />
 
-              {/* SERVICIOS */}
+              {/* Servicios */}
               <Route
                 exact
                 path="/admin/servicios"
-                render={() => <AdminOnly><ServiciosList /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><ServiciosList /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/servicios/nuevo"
-                render={() => <AdminOnly><ServicioCreate /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><ServicioCreate /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/servicios/:id/editar"
-                render={() => <AdminOnly><ServicioEdit /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><ServicioEdit /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/servicios/:id"
-                render={() => <AdminOnly><ServicioDetail /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><ServicioDetail /></AdminOnly>
+                )}
               />
 
-              {/* USUARIOS */}
+              {/* Usuarios */}
               <Route
                 exact
                 path="/admin/usuarios"
-                render={() => <AdminOnly><UsuariosList /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><UsuariosList /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/usuarios/:id/editar"
-                render={() => <AdminOnly><UsuarioEdit /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><UsuarioEdit /></AdminOnly>
+                )}
               />
 
               <Route
                 exact
                 path="/admin/usuarios/:id"
-                render={() => <AdminOnly><UsuarioDetail /></AdminOnly>}
+                render={() => (
+                  <AdminOnly><UsuarioDetail /></AdminOnly>
+                )}
               />
 
-              {/* CONSULTAS */}
+              {/* Consultas */}
               <Route
                 exact
                 path="/admin/consultas"
@@ -239,22 +274,22 @@ export default function AdminRoutes() {
                 component={ConsultaDetail}
               />
 
-              {/* CONFIGURACIÓN Y ESTADÍSTICAS */}
+              {/* Configuración */}
+              <Route
+                exact
+                path="/admin/configuracion"
+                render={() => (
+                  <AdminOnly><Configuracion /></AdminOnly>
+                )}
+              />
+
               <Redirect
                 exact
                 from="/admin/estadisticas"
                 to="/admin"
               />
 
-              <Route
-                exact
-                path="/admin/configuracion"
-                render={() => <AdminOnly><Configuracion /></AdminOnly>}
-              />
-
-              {/* RUTA POR DEFECTO */}
               <Redirect to="/admin" />
-
             </Switch>
           </AdminLayout>
         </AdminAccess>
