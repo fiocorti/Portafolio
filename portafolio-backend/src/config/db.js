@@ -1,5 +1,8 @@
 const mysql = require('mysql2/promise');
+const { readFileSync } = require('node:fs');
 require('dotenv').config();
+
+const caPath = process.env.DB_SSL_CA_PATH;
 
 // Creamos un "pool" (piscina) de conexiones para administrar múltiples peticiones
 const pool = mysql.createPool({
@@ -8,6 +11,12 @@ const pool = mysql.createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
+    ssl: caPath
+    ? {
+    ca: readFileSync(caPath, 'utf8'),
+    verifyIdentity: true
+    }
+    : undefined,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
