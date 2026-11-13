@@ -2,6 +2,7 @@
   "name": "frontend-admin-portfolio",
   "version": "1.0.0",
   "private": true,
+  "proxy": "http://localhost:3001",
   "dependencies": {
     "chart.js": "3.9.1",
     "lucide-react": "0.468.0",

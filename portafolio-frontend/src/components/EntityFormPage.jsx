@@ -1,66 +1,203 @@
+
 import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import { CheckCircle2, FileText, Globe, Image as ImageIcon, ListChecks, Save, Tags } from 'lucide-react';
+import {
+  CheckCircle2,
+  FileText,
+  Globe,
+  Image as ImageIcon,
+  ListChecks,
+  Save,
+  Tags
+} from 'lucide-react';
+
 import PageHeader from './PageHeader';
 import FormField from './FormField';
 import FormSection from './FormSection';
 import ImageUploader from './ImageUploader';
-import TagInput from './TagInput';
+import TechnologySelector from './TechnologySelector';
 import SegmentedControl from './SegmentedControl';
 import ErrorMessage from './ErrorMessage';
 import LoadingState from './LoadingState';
 import sectionIcon from './sectionIcons';
 import Toast from './Toast';
 
-const empty = { titulo: '', descripcion: '', tecnologias: '', imagen: '', repositorio: '', demo: '', url: '', estado: 'Borrador', icono: '', caracteristicas: '' };
-const labels = { titulo: 'Título', repositorio: 'URL del repositorio', demo: 'URL de demo (opcional)', url: 'URL de la demo', icono: 'Nombre del icono', descripcion: 'Descripción' };
-const placeholders = { titulo: 'Ej.: Mi aplicación web', icono: 'Ej.: Code2' };
+const empty = {
+  titulo: '',
+  descripcion: '',
+  tecnologias: [],
+  imagen: '',
+  repositorio: '',
+  demo: '',
+  url: '',
+  estado: 'Borrador',
+  icono: '',
+  caracteristicas: ''
+};
+
+const labels = {
+  titulo: 'Título',
+  repositorio: 'URL del repositorio',
+  demo: 'URL de demo (opcional)',
+  url: 'URL de la demo',
+  icono: 'Nombre del icono',
+  descripcion: 'Descripción'
+};
+
+const placeholders = {
+  titulo: 'Ej.: Mi aplicación web',
+  icono: 'Ej.: Code2'
+};
+
 const ESTADOS = [
   { value: 'Publicado', label: 'Publicado', tone: 'success' },
   { value: 'Borrador', label: 'Borrador', tone: 'warning' }
 ];
+
 const GROUPS = [
-  { key: 'info', title: 'Información', icon: FileText, accent: 'indigo', fields: ['titulo', 'descripcion', 'icono'] },
-  { key: 'imagen', title: 'Imagen', icon: ImageIcon, accent: 'cyan', fields: ['imagen'] },
-  { key: 'tecnologias', title: 'Tecnologías', icon: Tags, accent: 'slate', fields: ['tecnologias'] },
-  { key: 'caracteristicas', title: 'Características', icon: ListChecks, accent: 'indigo', fields: ['caracteristicas'] },
-  { key: 'publicacion', title: 'Publicación', icon: Globe, accent: 'indigo', fields: ['estado', 'repositorio', 'demo', 'url'] }
+  {
+    key: 'info',
+    title: 'Información',
+    icon: FileText,
+    accent: 'indigo',
+    fields: ['titulo', 'descripcion', 'icono']
+  },
+  {
+    key: 'imagen',
+    title: 'Imagen',
+    icon: ImageIcon,
+    accent: 'cyan',
+    fields: ['imagen']
+  },
+  {
+    key: 'tecnologias',
+    title: 'Tecnologías',
+    icon: Tags,
+    accent: 'slate',
+    fields: ['tecnologias']
+  },
+  {
+    key: 'caracteristicas',
+    title: 'Características',
+    icon: ListChecks,
+    accent: 'indigo',
+    fields: ['caracteristicas']
+  },
+  {
+    key: 'publicacion',
+    title: 'Publicación',
+    icon: Globe,
+    accent: 'indigo',
+    fields: ['estado', 'repositorio', 'demo', 'url']
+  }
 ];
+
 const KNOWN_FIELDS = GROUPS.flatMap(group => group.fields);
-const WIDE_FIELDS = ['imagen', 'descripcion', 'caracteristicas', 'tecnologias'];
-const VALIDATED_FIELDS = ['titulo', 'descripcion', 'repositorio', 'demo', 'url'];
+
+const WIDE_FIELDS = [
+  'imagen',
+  'descripcion',
+  'caracteristicas',
+  'tecnologias'
+];
+
+const VALIDATED_FIELDS = [
+  'titulo',
+  'descripcion',
+  'repositorio',
+  'demo',
+  'url'
+];
+
 const DESCRIPTION_RECOMMENDED = 300;
 const URL_PATTERN = /^https?:\/\//i;
+
 const isBlank = value => !String(value ?? '').trim();
 
 function validateEntity(values) {
   const next = {};
-  if (isBlank(values.titulo)) next.titulo = 'El título es obligatorio.';
-  if (isBlank(values.descripcion)) next.descripcion = 'La descripción es obligatoria.';
-  if (values.repositorio && !URL_PATTERN.test(values.repositorio)) next.repositorio = 'Ingresá una URL válida que comience con http:// o https://.';
-  if (values.url && !URL_PATTERN.test(values.url)) next.url = 'Ingresá una URL válida.';
-  if (values.demo && !URL_PATTERN.test(values.demo)) next.demo = 'Ingresá una URL válida.';
+
+  if (isBlank(values.titulo)) {
+    next.titulo = 'El título es obligatorio.';
+  }
+
+  if (isBlank(values.descripcion)) {
+    next.descripcion = 'La descripción es obligatoria.';
+  }
+
+  if (
+    values.repositorio &&
+    !URL_PATTERN.test(values.repositorio)
+  ) {
+    next.repositorio =
+      'Ingresá una URL válida que comience con http:// o https://.';
+  }
+
+  if (values.url && !URL_PATTERN.test(values.url)) {
+    next.url = 'Ingresá una URL válida.';
+  }
+
+  if (values.demo && !URL_PATTERN.test(values.demo)) {
+    next.demo = 'Ingresá una URL válida.';
+  }
+
   return next;
 }
 
-// Agrupa los campos pedidos en secciones con título, en el orden de GROUPS.
-// Los campos desconocidos caen en "Información" para no perder ninguno.
 function buildSections(fields) {
-  const unknown = fields.filter(field => !KNOWN_FIELDS.includes(field));
+  const unknown = fields.filter(
+    field => !KNOWN_FIELDS.includes(field)
+  );
+
   return GROUPS
     .map(group => ({
       ...group,
-      fields: [...group.fields.filter(field => fields.includes(field)), ...(group.key === 'info' ? unknown : [])]
+      fields: [
+        ...group.fields.filter(field => fields.includes(field)),
+        ...(group.key === 'info' ? unknown : [])
+      ]
     }))
     .filter(section => section.fields.length > 0);
 }
 
-// Formulario crear/editar reutilizable. Si recibe renderPreview, muestra a la derecha
-// una vista previa que se actualiza mientras se escribe.
-export default function EntityFormPage({ title, description, service, basePath, kind = 'project', fields, transformIn, transformOut, renderPreview }) {
+function normalizarTecnologias(tecnologias) {
+  if (!Array.isArray(tecnologias)) {
+    return [];
+  }
+
+  return tecnologias.map(tecnologia => {
+    if (typeof tecnologia === 'string') {
+      return {
+        nombre: tecnologia,
+        categoria: ''
+      };
+    }
+
+    return {
+      id_tecnologia:
+        tecnologia.id_tecnologia || tecnologia.id,
+      nombre: tecnologia.nombre,
+      categoria: tecnologia.categoria || ''
+    };
+  });
+}
+
+export default function EntityFormPage({
+  title,
+  description,
+  service,
+  basePath,
+  kind = 'project',
+  fields,
+  transformIn,
+  transformOut,
+  renderPreview
+}) {
   const { id } = useParams();
   const history = useHistory();
+
   const editing = Boolean(id);
+
   const [values, setValues] = useState(empty);
   const [touched, setTouched] = useState({});
   const [attempted, setAttempted] = useState(false);
@@ -72,46 +209,117 @@ export default function EntityFormPage({ title, description, service, basePath, 
 
   useEffect(() => {
     let active = true;
+
     if (editing) {
       service.get(id)
         .then(item => {
-          if (active) setValues({
+          if (!active) return;
+
+          const transformed = transformIn
+            ? transformIn(item)
+            : item;
+
+          setValues({
             ...empty,
-            ...(transformIn ? transformIn(item) : item),
-            tecnologias: Array.isArray(item.tecnologias) ? item.tecnologias.join(', ') : (item.tecnologias || ''),
-            caracteristicas: Array.isArray(item.caracteristicas) ? item.caracteristicas.join('\n') : (item.caracteristicas || '')
+            ...transformed,
+            tecnologias: normalizarTecnologias(
+              transformed.tecnologias || item.tecnologias
+            ),
+            caracteristicas: Array.isArray(
+              transformed.caracteristicas
+            )
+              ? transformed.caracteristicas.join('\n')
+              : (transformed.caracteristicas || '')
           });
         })
-        .catch(e => { if (active) setError(e.message); })
-        .finally(() => { if (active) setLoading(false); });
+        .catch(e => {
+          if (active) setError(e.message);
+        })
+        .finally(() => {
+          if (active) setLoading(false);
+        });
     }
-    return () => { active = false; };
+
+    return () => {
+      active = false;
+    };
   }, [editing, id, service, transformIn]);
 
-  const errors = useMemo(() => validateEntity(values), [values]);
-  const change = (name, value) => setValues(current => ({ ...current, [name]: value }));
-  const touch = name => setTouched(current => (current[name] ? current : { ...current, [name]: true }));
-  const showError = name => ((attempted || touched[name]) && errors[name]) || undefined;
-  const isValid = name => VALIDATED_FIELDS.includes(name) && (attempted || touched[name]) && !errors[name] && !isBlank(values[name]);
+  const errors = useMemo(
+    () => validateEntity(values),
+    [values]
+  );
+
+  const change = (name, value) => {
+    setValues(current => ({
+      ...current,
+      [name]: value
+    }));
+  };
+
+  const touch = name => {
+    setTouched(current =>
+      current[name]
+        ? current
+        : { ...current, [name]: true }
+    );
+  };
+
+  const showError = name =>
+    ((attempted || touched[name]) && errors[name]) || undefined;
+
+  const isValid = name =>
+    VALIDATED_FIELDS.includes(name) &&
+    (attempted || touched[name]) &&
+    !errors[name] &&
+    !isBlank(values[name]);
 
   const submit = async event => {
     event.preventDefault();
+
     setAttempted(true);
+
     if (Object.keys(errors).length > 0) {
       setError('Revisá los campos marcados antes de guardar.');
       return;
     }
+
     setError('');
     setSaving(true);
+
     const payload = transformOut
       ? transformOut(values)
-      : { ...values, tecnologias: values.tecnologias.split(',').map(x => x.trim()).filter(Boolean), caracteristicas: values.caracteristicas.split('\n').map(x => x.trim()).filter(Boolean) };
+      : {
+          ...values,
+          tecnologias: normalizarTecnologias(values.tecnologias),
+          caracteristicas: String(
+            values.caracteristicas || ''
+          )
+            .split('\n')
+            .map(item => item.trim())
+            .filter(Boolean)
+        };
+
     try {
-      const result = editing ? await service.update(id, payload) : await service.create(payload);
+      const result = editing
+        ? await service.update(id, payload)
+        : await service.create(payload);
+
       setSaving(false);
       setSaved(true);
-      setToast({ type: 'success', message: result?.message || `${kind} ${editing ? 'actualizado' : 'creado'} correctamente.` });
-      setTimeout(() => history.push(basePath), 800);
+
+      setToast({
+        type: 'success',
+        message:
+          result?.message ||
+          result?.mensaje ||
+          `${kind} ${editing ? 'actualizado' : 'creado'} correctamente.`
+      });
+
+      setTimeout(() => {
+        history.push(basePath);
+      }, 800);
+
     } catch (e) {
       setError(e.message);
       setSaving(false);
@@ -120,72 +328,199 @@ export default function EntityFormPage({ title, description, service, basePath, 
 
   const renderField = name => {
     let node;
+
     if (name === 'imagen') {
-      node = <ImageUploader value={values.imagen} onChange={change} />;
+      node = (
+        <ImageUploader
+          value={values.imagen}
+          onChange={change}
+        />
+      );
+
     } else if (name === 'tecnologias') {
-      node = <TagInput name={name} label="Tecnologías" value={values.tecnologias} onChange={change} help="Escribí una tecnología y presioná Enter o coma. Ej.: React, Node.js, MySQL" />;
+      node = (
+        <TechnologySelector
+          value={values.tecnologias}
+          onChange={change}
+        />
+      );
+
     } else if (name === 'estado') {
-      node = <SegmentedControl name={name} label="Estado" value={values.estado} onChange={change} options={ESTADOS} />;
+      node = (
+        <SegmentedControl
+          name={name}
+          label="Estado"
+          value={values.estado}
+          onChange={change}
+          options={ESTADOS}
+        />
+      );
+
     } else if (name === 'descripcion') {
       node = (
         <FormField
-          label={labels.descripcion} name={name} value={values.descripcion} onChange={change}
-          error={showError(name)} valid={isValid(name)} onBlur={() => touch(name)}
-          as="textarea" rows={5} required placeholder="Describí brevemente este contenido..."
-          count={String(values.descripcion || '').length} recommended={DESCRIPTION_RECOMMENDED}
+          label={labels.descripcion}
+          name={name}
+          value={values.descripcion}
+          onChange={change}
+          error={showError(name)}
+          valid={isValid(name)}
+          onBlur={() => touch(name)}
+          as="textarea"
+          rows={5}
+          required
+          placeholder="Describí brevemente este contenido..."
+          count={String(values.descripcion || '').length}
+          recommended={DESCRIPTION_RECOMMENDED}
         />
       );
+
     } else if (name === 'caracteristicas') {
-      node = <FormField label="Características" name={name} value={values.caracteristicas} onChange={change} as="textarea" rows={4} help="Escribí una característica por línea." />;
+      node = (
+        <FormField
+          label="Características"
+          name={name}
+          value={values.caracteristicas}
+          onChange={change}
+          as="textarea"
+          rows={4}
+          help="Escribí una característica por línea."
+        />
+      );
+
     } else {
       node = (
         <FormField
-          label={labels[name] || name} name={name} value={values[name]} onChange={change}
-          error={showError(name)} valid={isValid(name)} onBlur={() => touch(name)}
-          required={name === 'titulo'} placeholder={placeholders[name] || 'https://...'}
+          label={labels[name] || name}
+          name={name}
+          value={values[name]}
+          onChange={change}
+          error={showError(name)}
+          valid={isValid(name)}
+          onBlur={() => touch(name)}
+          required={name === 'titulo'}
+          placeholder={placeholders[name] || 'https://...'}
         />
       );
     }
+
     return WIDE_FIELDS.includes(name)
-      ? <div className="form-span-2" key={name}>{node}</div>
-      : <React.Fragment key={name}>{node}</React.Fragment>;
+      ? (
+          <div className="form-span-2" key={name}>
+            {node}
+          </div>
+        )
+      : (
+          <React.Fragment key={name}>
+            {node}
+          </React.Fragment>
+        );
   };
 
-  const common = fields || ['titulo', 'descripcion', 'imagen', 'tecnologias', 'estado'];
+  const common = fields || [
+    'titulo',
+    'descripcion',
+    'imagen',
+    'tecnologias',
+    'estado'
+  ];
+
   const sections = buildSections(common);
 
   return (
     <>
-      <PageHeader title={title} description={description} backTo={basePath} icon={sectionIcon(basePath)} />
-      {loading ? <LoadingState label="Cargando datos..." /> : (
+      <PageHeader
+        title={title}
+        description={description}
+        backTo={basePath}
+        icon={sectionIcon(basePath)}
+      />
+
+      {loading ? (
+        <LoadingState label="Cargando datos..." />
+      ) : (
         <div className={`form-layout${renderPreview ? ' has-preview' : ''}`}>
-          <form className="form-stack" onSubmit={submit} noValidate>
+          <form
+            className="form-stack"
+            onSubmit={submit}
+            noValidate
+          >
             {sections.map((section, index) => (
-              <FormSection key={section.key} title={section.title} icon={section.icon} accent={section.accent} index={index}>
-                <div className="form-grid">{section.fields.map(renderField)}</div>
+              <FormSection
+                key={section.key}
+                title={section.title}
+                icon={section.icon}
+                accent={section.accent}
+                index={index}
+              >
+                <div className="form-grid">
+                  {section.fields.map(renderField)}
+                </div>
               </FormSection>
             ))}
+
             <ErrorMessage message={error} />
+
             <div className="form-footer">
-              <button type="button" className="button button-secondary" onClick={() => history.push(basePath)} disabled={saving || saved}>Cancelar</button>
-              <button type="submit" className={`button ${saved ? 'button-success' : 'button-primary'}`} disabled={saving || saved}>
-                {saved ? <><CheckCircle2 size={17} aria-hidden="true" /> Guardado</>
-                  : saving ? <><span className="spinner spinner-inline" aria-hidden="true" /> Guardando...</>
-                  : <><Save size={17} aria-hidden="true" /> {editing ? 'Guardar cambios' : 'Crear registro'}</>}
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => history.push(basePath)}
+                disabled={saving || saved}
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="submit"
+                className={`button ${saved ? 'button-success' : 'button-primary'}`}
+                disabled={saving || saved}
+              >
+                {saved ? (
+                  <>
+                    <CheckCircle2 size={17} aria-hidden="true" />
+                    Guardado
+                  </>
+                ) : saving ? (
+                  <>
+                    <span
+                      className="spinner spinner-inline"
+                      aria-hidden="true"
+                    />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Save size={17} aria-hidden="true" />
+                    {editing ? 'Guardar cambios' : 'Crear registro'}
+                  </>
+                )}
               </button>
             </div>
           </form>
+
           {renderPreview && (
-            <aside className="form-preview" aria-label="Vista previa en vivo">
+            <aside
+              className="form-preview"
+              aria-label="Vista previa en vivo"
+            >
               <div className="form-preview-sticky">
-                <p className="preview-label"><span className="live-dot" aria-hidden="true" />Vista previa en vivo</p>
+                <p className="preview-label">
+                  <span className="live-dot" aria-hidden="true" />
+                  Vista previa en vivo
+                </p>
+
                 {renderPreview(values)}
               </div>
             </aside>
           )}
         </div>
       )}
-      <Toast toast={toast} onClose={() => setToast(null)} />
+
+      <Toast
+        toast={toast}
+        onClose={() => setToast(null)}
+      />
     </>
   );
 }
