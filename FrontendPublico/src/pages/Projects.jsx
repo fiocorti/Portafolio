@@ -89,15 +89,15 @@ useEffect(() => {
             desarrollo web y tecnología.
           </p>
 
-          <div className="projects-access-info">
-            <span aria-hidden="true">🔒</span>
-
-            <p>
-              Para visualizar los detalles completos
-              y acceder a las demos, es necesario
-              registrarse e iniciar sesión.
-            </p>
-          </div>
+          {!cargandoSesion && !usuario && (
+            <div className="projects-access-info">
+              <p>
+                Para visualizar los detalles completos y
+                acceder a las demos, es necesario
+                registrarse e iniciar sesión.
+              </p>
+            </div>
+          )}
 
         </div>
       </section>
@@ -200,6 +200,7 @@ useEffect(() => {
       </section>
 
       {/* SECCIÓN 3: REGISTRO */}
+      {!cargandoSesion && !usuario && (
       <section className="projects-section projects-section-alt">
         <div className="container">
 
@@ -241,6 +242,7 @@ useEffect(() => {
 
         </div>
       </section>
+      )}
 
       {/* MODAL DE DETALLES */}
       {usuario && proyectoSeleccionado && (

@@ -173,7 +173,7 @@ function ProjectModal({ proyecto, onClose }) {
                 rel="noopener noreferrer"
                 className="project-card-button"
               >
-                Ver repositorio ↗
+                Ver repositorio
               </a>
             )}
 
@@ -184,7 +184,7 @@ function ProjectModal({ proyecto, onClose }) {
                 rel="noopener noreferrer"
                 className="project-card-button"
               >
-                Ver demo ↗
+                Ver demo
               </a>
             )}
 

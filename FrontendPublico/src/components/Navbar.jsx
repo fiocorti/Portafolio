@@ -1,5 +1,4 @@
 
-
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -37,6 +36,7 @@ function Navbar() {
     }
   };
 
+  // Enlaces del frontend público
   const enlaces = [
     { nombre: "Inicio", ruta: "/" },
     { nombre: "Sobre mí", ruta: "/sobre-mi" },
@@ -45,6 +45,19 @@ function Navbar() {
     { nombre: "Proyectos", ruta: "/proyectos" },
     { nombre: "Contacto", ruta: "/contacto" },
   ];
+
+  // Verificar si la cuenta tiene permisos administrativos
+  const esAdministrador = [
+    "administrador",
+    "admin",
+    "operador"
+  ].includes(
+    String(usuario?.rol || "").toLowerCase()
+  );
+
+  // Dirección de la aplicación administrativa
+  const urlPanelAdmin = process.env.REACT_APP_ADMIN_URL;
+
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark navbar-publica sticky-top">
@@ -105,6 +118,20 @@ function Navbar() {
                 </NavLink>
               </li>
             )}
+
+            {/* Acceso al panel administrativo */}
+            {esAdministrador && urlPanelAdmin && (
+              <li className="nav-item">
+                <a
+                  href={urlPanelAdmin}
+                  className="nav-link"
+                  onClick={cerrarMenu}
+                >
+                  Panel administrativo
+                </a>
+              </li>
+            )}
+
 
 
             {/* Mientras se comprueba la sesión */}

@@ -21,10 +21,13 @@ import Demos from "./pages/Demos";
 import RegistroVisitas from "./components/RegistroVisitas";
 import { AuthProvider } from "./context/AuthContext";
 import RutaProtegida from "./components/RutaProtegida";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
+
       <AuthProvider>
         <RegistroVisitas />
         <Navbar />

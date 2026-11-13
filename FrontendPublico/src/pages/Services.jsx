@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import ServiceCard from "../components/ServiceCard";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { obtenerServicios } from "../services/portafolioApi";
 
 // Datos de ejemplo de los servicios.
@@ -35,6 +35,35 @@ function Services() {
 const [servicios, setServicios] = useState([]);
 const [cargando, setCargando] = useState(true);
 const [error, setError] = useState("");
+
+const carruselRef = useRef(null);
+
+const desplazarServicios = (direccion) => {
+  const contenedor = carruselRef.current;
+  if (!contenedor) return;
+
+  const tarjeta = contenedor.querySelector(
+    ".services-carousel-item"
+  );
+
+  if (!tarjeta) return;
+
+  const separacion =
+    parseFloat(window.getComputedStyle(contenedor).gap) || 0;
+
+  const distancia =
+    tarjeta.getBoundingClientRect().width + separacion;
+
+  const movimientoReducido = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  contenedor.scrollBy({
+    left: direccion * distancia,
+    behavior: movimientoReducido ? "auto" : "smooth",
+  });
+};
+
 
 useEffect(() => {
   let activo = true;
@@ -112,21 +141,55 @@ useEffect(() => {
               No se pudieron cargar los servicios: {error}
             </p>
           )}
-          <div className="row g-4">
 
-            {servicios.map((servicio, index) => (
-              <div
-                className="col-md-6"
-                key={servicio.id}
-              >
-                <ServiceCard
-                  servicio={servicio}
-                  numero={index + 1}
-                />
-              </div>
-            ))}
+        {/* Controles del carrusel */}
+        {servicios.length > 1 && (
+          <div className="services-carousel-controls">
+            <button
+              type="button"
+              className="services-carousel-btn"
+              aria-label="Ver servicios anteriores"
+              aria-controls="services-carousel-track"
+              onClick={() => desplazarServicios(-1)}
+            >
+              ←
+            </button>
 
+            <button
+              type="button"
+              className="services-carousel-btn"
+              aria-label="Ver servicios siguientes"
+              aria-controls="services-carousel-track"
+              onClick={() => desplazarServicios(1)}
+            >
+              →
+            </button>
           </div>
+        )}
+
+      {/* Tarjetas desplazables */}
+      <div
+        id="services-carousel-track"
+        className="services-carousel-track"
+        ref={carruselRef}
+        role="region"
+        aria-roledescription="carrusel"
+        aria-label="Servicios disponibles"
+        tabIndex={0}
+      >
+        {servicios.map((servicio, index) => (
+          <div
+            className="services-carousel-item"
+            key={servicio.id}
+          >
+            <ServiceCard
+              servicio={servicio}
+              numero={index + 1}
+            />
+          </div>
+        ))}
+      </div>
+
         </div>
       </section>
 
